@@ -79,7 +79,7 @@ def create_legal_supervisor():
 
 Въз основа на правната заявка на потребителя, определете кой агент трябва да предприеме следващото действие:
 
-- **Legal_Researcher**: Търси правна информация в български правни домейни (lex.bg, vks.bg, vss.bg, etc.)
+- **Legal_Researcher**: Търси правна информация в български правни домейни ( dominos.vks.bg, dominos.vss.bg, ciela.net, apis.bg, lakorda.com)
 - **Legal_Analyst**: Анализира правни документи и извлича ключова информация
 - **Precedent_Finder**: Търси съдебна практика и precedents в българските съдилища
 - **Document_Reviewer**: Прегледа и анализира правни документи за цитати и препратки
@@ -131,7 +131,7 @@ def create_legal_researcher_agent():
 Вашата роля е да:
 1. Търсите правна информация в специализирани български правни бази данни
 2. Фокусирате се върху актуални закони, наредби и нормативни актове
-3. Използвате domain-specific търсене за lex.bg, vks.bg, vss.bg, justice.bg, parlament.bg
+3. Използвате domain-specific търсене за dominos.vks.bg, dominos.vss.bg, ciela.net, apis.bg, lakorda.com
 4. Идентифицирате правната област (корпоративно право, административно право, etc.)
 5. Предоставяте точни цитати с чл., ал., т.
 

@@ -53,12 +53,16 @@ def test_enhanced_search():
                 domains = {}
                 for result in results:
                     href = result.get('href', '')
-                    if 'lex.bg' in href:
-                        domains['lex.bg'] = domains.get('lex.bg', 0) + 1
-                    elif 'vks.bg' in href:
-                        domains['vks.bg'] = domains.get('vks.bg', 0) + 1
-                    elif 'justice.bg' in href:
-                        domains['justice.bg'] = domains.get('justice.bg', 0) + 1
+                    if 'dominos.vks.bg' in href:
+                        domains['dominos.vks.bg'] = domains.get('dominos.vks.bg', 0) + 1
+                    elif 'dominos.vss.bg' in href:
+                        domains['dominos.vss.bg'] = domains.get('dominos.vss.bg', 0) + 1
+                    elif 'ciela.net' in href:
+                        domains['ciela.net'] = domains.get('ciela.net', 0) + 1
+                    elif 'apis.bg' in href:
+                        domains['apis.bg'] = domains.get('apis.bg', 0) + 1
+                    elif 'lakorda.com' in href:
+                        domains['lakorda.com'] = domains.get('lakorda.com', 0) + 1
                     else:
                         domains['other'] = domains.get('other', 0) + 1
                 
@@ -81,7 +85,7 @@ def test_enhanced_search():
         start_time = time.time()
         domain_results = google_domain_search.invoke({
             "query": "обезщетение ВКС", 
-            "domains": ['lex.bg', 'vks.bg', 'justice.bg']
+            "domains": ['dominos.vks.bg', 'dominos.vss.bg', 'ciela.net', 'apis.bg', 'lakorda.com']
         })
         
         if isinstance(domain_results, list) and domain_results:
@@ -105,7 +109,7 @@ def test_enhanced_search():
         start_time = time.time()
         legal_results = bulgarian_legal_search.invoke({
             "query": "обезщетение за телесна повреда",
-            "specific_domain": "lex.bg"
+            "specific_domain": "dominos.vks.bg"
         })
         
         if isinstance(legal_results, list) and legal_results:

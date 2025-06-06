@@ -14,13 +14,7 @@ from typing import List, Dict, Optional, Any
 import time
 import logging
 from dotenv import load_dotenv
-from bulgarian_legal_domains import (
-    BULGARIAN_LEGAL_DOMAINS, 
-    BULGARIAN_LEGAL_AREAS,
-    get_domain_specific_search_pattern,
-    get_domains_for_legal_area,
-    enhance_query_with_bulgarian_legal_terms
-)
+from bulgarian_legal_domains import BULGARIAN_LEGAL_DOMAINS
 
 load_dotenv()
 
@@ -195,13 +189,9 @@ def bulgarian_legal_search(query: str, specific_domain: str = None) -> str:
     
     # Define Bulgarian legal domains mapping
     domain_mapping = {
-        'lex_bg': 'lex.bg',
-        'vks_bg': 'vks.bg',
-        'vss_bg': 'vss.bg',  
-        'justice_bg': 'justice.bg',
-        'parliament_bg': 'parliament.bg',
-        'cpc_bg': 'cpc.bg',
-        'dv_bg': 'dv.bg'
+        'ciela_net': 'ciela.net',
+        'apis_bg': 'apis.bg',
+        'lakorda_com': 'lakorda.com'
     }
     
     all_results = []
@@ -258,13 +248,9 @@ def bulgarian_legal_search(query: str, specific_domain: str = None) -> str:
 def get_domain_description(domain: str) -> str:
     """Map domain URLs to descriptive names."""
     descriptions = {
-        'lex.bg': 'LexBG - Comprehensive Bulgarian legal database',
-        'vks.bg': 'Supreme Court of Cassation - Върховен касационен съд',
-        'vss.bg': 'Supreme Administrative Court - Върховен административен съд',
-        'justice.bg': 'Ministry of Justice - Министерство на правосъдието',
-        'parliament.bg': 'National Assembly - Народно събрание',
-        'cpc.bg': 'Commission for Personal Data Protection - КЗЛД',
-        'dv.bg': 'State Gazette - Държавен вестник'
+        'ciela.net': 'Ciela - Bulgarian legal information and publishing (19,300+ pages)',
+        'apis.bg': 'Апис - Bulgarian legal information and publishing (4,190+ pages)',
+        'lakorda.com': 'Лакорда - Legal news and information portal (11+ pages)'
     }
     return descriptions.get(domain, domain)
 

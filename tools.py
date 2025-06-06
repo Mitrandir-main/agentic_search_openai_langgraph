@@ -28,7 +28,6 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
     
     Args:
         query: Search query
-        site_search: Specific domain to search within (e.g., 'lex.bg', 'vks.bg')
         country: Country code for geolocation (default: 'bg' for Bulgaria)
         language: Language restriction (default: 'lang_bg' for Bulgarian)
         num_results: Number of results to return (1-10)
@@ -61,9 +60,13 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
         
         # Add site-specific search if specified
         if site_search:
+            # Try both siteSearch parameter and site: operator in query
             params['siteSearch'] = site_search
             params['siteSearchFilter'] = 'i'  # Include results from this site
-            logger.info(f"Searching within domain: {site_search}")
+            # Also add site: operator to the query for better coverage
+            enhanced_query = f"site:{site_search} {enhanced_query}"
+            params['q'] = enhanced_query
+            logger.info(f"Searching within domain: {site_search} with enhanced query: {enhanced_query}")
         
         logger.info(f"Google CSE search: {enhanced_query} (country: {country}, lang: {language})")
         
@@ -93,7 +96,7 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
         
         if not items:
             logger.warning(f"No results from Google CSE (total available: {total_results})")
-            return internet_search_DDGO(query)
+            return []  # Return empty list instead of falling back to DuckDuckGo
         
         for item in items:
             result = {
@@ -109,10 +112,10 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
         
     except requests.exceptions.RequestException as e:
         logger.error(f"Google CSE API request error: {e}")
-        return internet_search_DDGO(query)
+        return []  # Return empty list instead of falling back
     except Exception as e:
         logger.error(f"Google CSE processing error: {e}")
-        return internet_search_DDGO(query)
+        return []  # Return empty list instead of falling back
 
 @tool("google_domain_search", return_direct=False)
 def google_domain_search(query: str, domains: list = None) -> str:
@@ -124,15 +127,11 @@ def google_domain_search(query: str, domains: list = None) -> str:
         domains: List of domains to search (default: Bulgarian legal domains)
     """
     if not domains:
-        # Prioritized Bulgarian legal domains - most comprehensive first
+        # Bulgarian legal domains with verified Google CSE indexing
         domains = [
-            'lex.bg',        # Most comprehensive legal database
-            'vks.bg',        # Supreme Court of Cassation
-            'vss.bg',        # Supreme Administrative Court  
-            'justice.bg',    # Ministry of Justice
-            'parliament.bg', # National Assembly
-            'dv.bg',         # State Gazette
-            'cpc.bg'         # Data Protection Commission
+            'ciela.net',    # Bulgarian legal information (19,300+ pages)
+            'apis.bg',      # Bulgarian legal information (4,190+ pages)
+            'lakorda.com'   # Legal news portal (11+ pages)
         ]
     
     all_results = []
@@ -179,8 +178,27 @@ def google_domain_search(query: str, domains: list = None) -> str:
             continue
     
     if not all_results:
-        logger.warning("No results from domain search, falling back to general search")
-        return google_cse_search.invoke({"query": query, "country": "bg", "language": "lang_bg"})
+        logger.warning("No results from domain search, trying without site restriction")
+        # Try a general search with domain terms included in query
+        domain_terms = " OR ".join([f"site:{domain}" for domain in domains[:3]])  # Top 3 domains
+        general_query = f"{query} ({domain_terms})"
+        
+        general_results = google_cse_search.invoke({
+            "query": general_query,
+            "country": "bg", 
+            "language": "lang_bg",
+            "num_results": 10
+        })
+        
+        if isinstance(general_results, list) and general_results:
+            for result in general_results:
+                result['source_domain'] = "Google CSE - Multi-domain search"
+                result['domain_priority'] = 999
+            return general_results
+        
+        # If still no results, return empty list instead of falling back
+        logger.error("No results found even with general domain search")
+        return []
     
     # Sort results by domain priority and limit total results
     all_results.sort(key=lambda x: x.get('domain_priority', 999))

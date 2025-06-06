@@ -120,7 +120,7 @@ def visualize_legal_graph():
             f.write("\n```\n\n")
             f.write("## 📋 Agent Descriptions\n\n")
             f.write("- **Legal_Supervisor**: Orchestrates legal research workflow\n")
-            f.write("- **Legal_Researcher**: Searches Bulgarian legal domains (lex.bg, vks.bg, etc.)\n")
+            f.write("- **Legal_Researcher**: Searches Bulgarian legal domains (dominos.vks.bg, dominos.vss.bg, ciela.net, apis.bg, lakorda.com)\n")
             f.write("- **Legal_Analyst**: Analyzes legal documents and extracts key information\n")
             f.write("- **Precedent_Finder**: Finds relevant court decisions and precedents\n")
             f.write("- **Document_Reviewer**: Reviews documents for citations and legal accuracy\n")
