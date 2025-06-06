@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import BaseMessage, HumanMessage
-from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
+from langchain.output_parsers.openai_tools import JsonOutputToolsParser
 
 from tools import get_tools
 
@@ -18,7 +18,7 @@ load_dotenv()
 #   verbose=True
 # )
 llm = ChatOpenAI(
-  model="gpt-4o",
+  model="gpt-4o-mini",
   temperature=0,
   verbose=True
 )
@@ -59,14 +59,16 @@ def create_supervisor():
   options = ["FINISH"] + members
 
   function_def = {
-    "name": "route",
-    "description": "Select the next role.",
-    "parameters": {
-        "title": "routeSchema",
-        "type": "object",
-        "properties": {"next": {"title": "Next", "anyOf": [{"enum": options}] }},
-        "required": ["next"],
-    },
+    "type": "function",
+    "function": {
+      "name": "route",
+      "description": "Select the next role.",
+      "parameters": {
+          "type": "object",
+          "properties": {"next": {"type": "string", "enum": options}},
+          "required": ["next"],
+      },
+    }
   }
 
   prompt = ChatPromptTemplate.from_messages([
@@ -75,23 +77,31 @@ def create_supervisor():
     ("system", "Given the conversation above, who should act next? Or should we FINISH? Select one of: {options}"),
   ]).partial(options=str(options), members=", ".join(members))
 
-  supervisor_chain = (prompt | llm.bind_functions(functions=[function_def], function_call="route") | JsonOutputFunctionsParser())
+  supervisor_chain = (
+    prompt 
+    | llm.bind_tools(tools=[function_def], tool_choice={"type": "function", "function": {"name": "route"}}) 
+    | JsonOutputToolsParser(first_tool_only=True)
+  )
 
   return supervisor_chain
 
 def create_search_agent():
-  search_agent = create_agent(llm, tools, "You are a web searcher. Search the internet for information.")
+  search_agent = create_agent(llm, tools, """You are a web searcher. Search the internet for information.
+  Focus on finding the most recent and relevant information. When searching for information about Bulgaria or in Bulgarian language,
+  prioritize Bulgarian websites and sources. Use current dates and ensure information is up-to-date.""")
   search_node = functools.partial(agent_node, agent=search_agent, name="Web_Searcher")
 
   return search_node
 
 def create_insights_researcher_agent():
   insights_research_agent = create_agent(llm, tools,
-    """You are a Insight Researcher. Do step by step.
-    Based on the provided content first identify the list of topics,
-    then search internet for each topic one by one
-    and finally find insights for each topic one by one.
-    Include the insights and sources in the final response
+    """You are an Insight Researcher specializing in thorough analysis and research. Do step by step:
+    1. First identify the list of topics from the provided content
+    2. Search internet for each topic one by one, prioritizing current and relevant information
+    3. For Bulgarian content, focus on Bulgarian websites (.bg domains) and Bulgarian language sources
+    4. Analyze and synthesize findings to provide deep insights
+    5. Include comprehensive insights and reliable sources in the final response
+    6. Ensure all information is current and fact-checked
     """)
   insights_researcher_node = functools.partial(agent_node, agent=insights_research_agent, name="Insight_Researcher")
 

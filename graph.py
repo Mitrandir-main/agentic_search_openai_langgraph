@@ -19,21 +19,67 @@ def build_graph():
 
     conditional_map = {k: k for k in members}
     conditional_map["FINISH"] = END
-    graph_builder.add_conditional_edges("Supervisor", lambda x: x["next"], conditional_map)
+    
+    # Update conditional edges to handle the new tool output format
+    def route_supervisor(x):
+        if isinstance(x, dict) and "args" in x:
+            return x["args"]["next"]
+        elif isinstance(x, dict) and "next" in x:
+            return x["next"]
+        else:
+            return END
+    
+    graph_builder.add_conditional_edges("Supervisor", route_supervisor, conditional_map)
     graph_builder.set_entry_point("Supervisor")
 
     graph = graph_builder.compile()
 
     return graph
 
+def visualize_graph():
+    """Generate and save graph visualization"""
+    graph = build_graph()
+    try:
+        # Try to create PNG visualization
+        png_data = graph.get_graph().draw_mermaid_png()
+        with open("graph_visualization.png", "wb") as f:
+            f.write(png_data)
+        print("Graph visualization saved as 'graph_visualization.png'")
+        
+        # Also create Mermaid text format
+        mermaid_syntax = graph.get_graph().draw_mermaid()
+        with open("graph_visualization.md", "w") as f:
+            f.write("# Agent Graph Visualization\n\n")
+            f.write("```mermaid\n")
+            f.write(mermaid_syntax)
+            f.write("\n```")
+        print("Mermaid syntax saved as 'graph_visualization.md'")
+        
+        return mermaid_syntax
+        
+    except Exception as e:
+        print(f"Could not generate PNG visualization: {e}")
+        # Fallback to text representation
+        mermaid_syntax = graph.get_graph().draw_mermaid()
+        print("Mermaid Graph Structure:")
+        print(mermaid_syntax)
+        return mermaid_syntax
+
 def run_graph(input_message):
     graph = build_graph()
+    
+    # Enhanced response processing
     response = graph.invoke({
         "messages": [HumanMessage(content=input_message)]
     })
 
-    # Extract the content
-    content = response['messages'][1].content
+    # Extract and format the content with better handling
+    if not response.get('messages'):
+        return "No response generated."
+    
+    # Get the last message content
+    last_message = response['messages'][-1]
+    content = last_message.content if hasattr(last_message, 'content') else str(last_message)
 
     # Initialize results and references
     result = ""
@@ -53,4 +99,47 @@ def run_graph(input_message):
         for ref in references:
             result += f"{ref}\n"
 
+    # Add metadata about the processing
+    result += f"\n\n*Processed by {len(response['messages'])} agent interactions*"
+    
     return result
+
+def run_graph_with_streaming(input_message):
+    """Run graph with streaming for better user experience"""
+    graph = build_graph()
+    
+    print("🤖 Starting agentic search and analysis...\n")
+    
+    try:
+        for event in graph.stream({
+            "messages": [HumanMessage(content=input_message)]
+        }):
+            for key, value in event.items():
+                if key != "__end__":
+                    print(f"📊 **{key}**: {value}")
+                    print("---")
+        
+        # Get final result
+        final_response = graph.invoke({
+            "messages": [HumanMessage(content=input_message)]
+        })
+        
+        return run_graph(input_message)  # Use the existing formatting
+        
+    except Exception as e:
+        print(f"Error during streaming execution: {e}")
+        return run_graph(input_message)  # Fallback to regular execution
+
+def get_graph_info():
+    """Get information about the graph structure"""
+    graph = build_graph()
+    graph_dict = graph.get_graph()
+    
+    info = {
+        "nodes": list(graph_dict.nodes.keys()),
+        "edges": [(edge.source, edge.target) for edge in graph_dict.edges],
+        "entry_point": "Supervisor",
+        "tools_available": ["internet_search_DDGO", "bulgarian_search", "current_events_search", "process_content"]
+    }
+    
+    return info
