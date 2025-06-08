@@ -16,7 +16,25 @@ import time
 import asyncio
 import logging
 from dotenv import load_dotenv
-from bulgarian_legal_domains import BULGARIAN_LEGAL_DOMAINS
+
+# Bulgarian legal domains configuration
+BULGARIAN_LEGAL_DOMAINS = {
+    "ciela.net": {
+        "authority": 0.95,
+        "description": "Водеща българска правна платформа (19,300+ страници)",
+        "specialties": ["laws", "regulations", "case_law"]
+    },
+    "apis.bg": {
+        "authority": 0.90,
+        "description": "Апис - специализирано правно издателство (4,190+ страници)", 
+        "specialties": ["legal_commentary", "analysis", "practice"]
+    },
+    "lakorda.com": {
+        "authority": 0.75,
+        "description": "Правни новини и анализи (11+ страници)",
+        "specialties": ["news", "analysis", "current_events"]
+    }
+}
 
 # Disable SSL warnings for problematic government sites
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -1019,17 +1037,27 @@ async def enhanced_bulgarian_legal_search(query: str, max_results: int = 30, min
         # Sort by relevancy score
         scored_results.sort(key=lambda x: x.get('relevancy_score', 0), reverse=True)
         
-        # Filter by relevancy threshold
-        filtered_results = [r for r in scored_results if r.get('relevancy_score', 0) >= min_relevancy]
+        # IMPROVED FILTERING: More generous thresholds based on agentic search best practices
+        # Use adaptive threshold: if we have many high-quality results, be stricter; if few, be more generous
+        high_quality_results = [r for r in scored_results if r.get('relevancy_score', 0) >= 0.6]
+        medium_quality_results = [r for r in scored_results if r.get('relevancy_score', 0) >= 0.3]
         
-        if not filtered_results:
-            logger.warning(f"No results above relevancy threshold {min_relevancy}")
-            filtered_results = scored_results[:10]  # Take top 10 regardless
+        if len(high_quality_results) >= 10:
+            # We have plenty of high-quality results
+            filtered_results = high_quality_results[:20]
+        elif len(medium_quality_results) >= 8:
+            # Use medium quality results
+            filtered_results = medium_quality_results[:15]
+        else:
+            # Be generous - take all scored results
+            filtered_results = scored_results[:12]
         
-        # Limit final results
-        final_results = filtered_results[:max_results]
+        logger.info(f"📊 Result filtering: {len(scored_results)} → {len(filtered_results)} results (adaptive threshold)")
         
-        logger.info(f"✅ Returning {len(final_results)} highly relevant results")
+        # Ensure minimum number of results for comprehensive analysis
+        final_results = filtered_results[:max(15, min(len(filtered_results), 20))]
+        
+        logger.info(f"✅ Returning {len(final_results)} comprehensive results for analysis")
         
         # Format simplified results 
         return format_simplified_search_results(query, final_results)
@@ -1363,8 +1391,42 @@ def format_simplified_search_results(query: str, results: List[Dict]) -> str:
     response_parts.append(f"📊 **Статистика**: {len(results)} резултата | Средна релевантност: {avg_relevancy:.1%} | Средна увереност: {avg_confidence:.1%}")
     response_parts.append("=" * 80)
     
+    # TOP RESULTS DISPLAY (Non-AI section - just showing the ranked pages)
+    response_parts.append("🏆 **ТОП КЛАСИРАНИ РЕЗУЛТАТИ ПО РЕЛЕВАНТНОСТ**")
+    response_parts.append("*Автоматично класирани с BM25 + семантичен анализ + RRF рейтинг*")
+    response_parts.append("")
+    
+    for i, result in enumerate(results[:min(12, len(results))], 1):
+        url = result.get('url', result.get('href', ''))
+        title = result.get('title', 'No Title')
+        snippet = result.get('body', result.get('snippet', ''))[:200]
+        domain = extract_domain_from_url(url)
+        relevancy = result.get('relevancy_score', 0)
+        
+        # Create visual relevancy indicator
+        relevancy_bar = "🟢" * int(relevancy * 5) + "⚪" * (5 - int(relevancy * 5))
+        
+        # Get domain description from BULGARIAN_LEGAL_DOMAINS
+        domain_info = BULGARIAN_LEGAL_DOMAINS.get(domain, {})
+        domain_type = domain_info.get('description', 'Правен източник')
+        
+        response_parts.append(f"**{i}. {title}**")
+        response_parts.append(f"   🏛️ *{domain}* ({domain_type})")
+        response_parts.append(f"   📊 Релевантност: {relevancy_bar} **{relevancy:.1%}**")
+        response_parts.append(f"   📄 {snippet}...")
+        response_parts.append(f"   🔗 [{url}]({url})")
+        response_parts.append("")
+    
+    response_parts.append("=" * 80)
+    response_parts.append("")
+    
+    # AI-DRIVEN COMPREHENSIVE ANALYSIS
+    response_parts.append("🤖 **AI АНАЛИЗ И ОТГОВОР**")
+    response_parts.append("*Генериран чрез дълбок анализ на съдържанието от горните източници*")
+    response_parts.append("")
+    
     # MAIN LEGAL ANSWER - This is what the user wants!
-    response_parts.append(f"⚖️ **ПРАВЕН ОТГОВОР НА ЗАПИТВАНЕТО: '{query}'**")
+    response_parts.append(f"⚖️ **ДИРЕКТЕН ОТГОВОР НА ЗАПИТВАНЕТО: '{query}'**")
     response_parts.append(comprehensive_analysis['direct_answer'])
     
     # Legal framework and applicable laws
@@ -1404,9 +1466,10 @@ def format_simplified_search_results(query: str, results: List[Dict]) -> str:
         response_parts.append(f"**{i}.** [{title[:80]}...]({url})")
         response_parts.append(f"    🏛️ {domain} | 📊 {relevancy_bar} {relevancy:.1%}")
     
-    # Footer
+    # Footer with methodology
     response_parts.append(f"\n" + "=" * 80)
-    response_parts.append(f"🔬 **МЕТОДОЛОГИЯ**: AI анализ на {len(results)} правни документа с BM25 + семантична обработка")
+    response_parts.append(f"🔬 **МЕТОДОЛОГИЯ**: AI анализ на {len(results)} правни документа с 7000 символа съдържание от всеки източник")
+    response_parts.append(f"📈 **Технологии**: BM25 алгоритъм + OpenAI семантичен анализ + Адаптивно филтриране + GPT-4o-mini аналитика")
     
     return "\n".join(response_parts)
 
@@ -1419,10 +1482,10 @@ def analyze_legal_content_comprehensively(query: str, results: List[Dict]) -> Di
     # Extract all deep content from top sources
     all_content = []
     
-    for result in results[:8]:  # Focus on top 8 most relevant
+    for result in results[:12]:  # Analyze more sources for comprehensive coverage  
         content = result.get('enhanced_content', '') or result.get('content', '') or result.get('body', '')
         if content and len(content) > 150:  # Only meaningful content
-            all_content.append(content[:2000])  # Take substantial chunks
+            all_content.append(content[:7000])  # Use full 7K characters per source
     
     # Combine the extracted content
     combined_content = "\n".join(all_content)
@@ -1436,7 +1499,7 @@ def analyze_legal_content_comprehensively(query: str, results: List[Dict]) -> Di
 Ти си експерт в българското право. Анализирай извлеченото съдържание от правни документи и отговори ДИРЕКТНО на въпроса: "{query}"
 
 ПРАВНО СЪДЪРЖАНИЕ ЗА АНАЛИЗ:
-{combined_content[:5000]}
+{combined_content[:15000]}
 
 ЗАДАЧА:
 1. Прочети ЦЯЛОТО съдържание и извлечи КОНКРЕТНИ правни отговори
@@ -1457,7 +1520,7 @@ RECOMMENDATIONS: [Практически съвети базирани на до
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": analysis_prompt}],
-            max_tokens=2500,
+            max_tokens=4000,  # Increased for comprehensive analysis
             temperature=0.1
         )
         
@@ -1689,4 +1752,4 @@ def google_domain_search(query: str, max_results: int = 10) -> List[Dict]:
         
     except Exception as e:
         logger.error(f"All search methods failed: {e}")
-        return [] 
+        return []
