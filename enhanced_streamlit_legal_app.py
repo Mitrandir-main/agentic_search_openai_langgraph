@@ -2,14 +2,7 @@ import streamlit as st
 import time
 import json
 from dotenv import load_dotenv
-from graph import (
-    run_graph, 
-    run_graph_with_streaming, 
-    visualize_graph, 
-    get_graph_info,
-    get_config_options,
-    format_top_sources
-)
+# Removed unused graph imports - system now uses enhanced_legal_tools directly
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -293,9 +286,12 @@ def main():
                         min_relevancy=min_relevancy/100
                     )
                 else:
-                    # Fallback to standard search
-                    from graph import bulgarian_legal_research
-                    result = bulgarian_legal_research(query, {"complexity": processing_speed})
+                    # Fallback to standard search using the same enhanced function  
+                    result = enhanced_bulgarian_legal_search_sync(
+                        query, 
+                        max_results=max_results, 
+                        min_relevancy=min_relevancy/100
+                    )
             
             # Display results with enhanced formatting
             st.markdown("### 📊 Резултати от Напредната Аналитика")

@@ -1,10 +1,7 @@
-# Core LangChain and LangGraph packages (Latest 2025 versions)
+# Core LangChain packages (required for enhanced_legal_tools)
 langchain>=0.3.0
-langgraph>=0.5.0
 langchain-openai>=0.2.0
 langchain-community>=0.3.0
-langchainhub
-langsmith>=0.2.0
 
 # Enhanced search and web scraping
 duckduckgo-search
@@ -18,10 +15,8 @@ google-api-python-client>=2.0.0
 
 # UI and visualization
 streamlit>=1.28.0
-gradio
 matplotlib
 plotly
-mermaid-py
 
 # Data processing and analysis
 pandas
@@ -34,35 +29,19 @@ pydantic>=2.0.0
 retry
 tenacity
 
-# Legal document processing
-pypdf2
-python-docx
-pdfplumber
-
 # Bulgarian text processing
 regex
 unidecode
 
-# Logging and monitoring
-structlog
-rich
-
-# Optional: Advanced features
-# pygraphviz  # For advanced graph visualization (requires system dependencies)
-# opencv-python  # For image processing if needed
-
-# New dependencies from the code block
+# Exact dependency versions (for compatibility)
 openai==1.54.3
 langchain==0.3.7
 langchain-openai==0.2.8
 langchain-community==0.3.5
 langchain-core==0.3.15
-langgraph==0.2.34
 streamlit==1.39.0
-gradio==5.6.0
 requests==2.32.3
 python-dotenv==1.0.1
-asyncio==3.4.3
 typing-extensions==4.12.2
 
 # Enhanced relevancy scoring dependencies
@@ -73,16 +52,11 @@ scipy==1.14.1
 # Enhanced UI and visualization
 plotly==5.24.1
 matplotlib==3.9.2
-seaborn==0.13.2
 
 # Web scraping and content extraction
 lxml==5.3.0
 html5lib==1.1
 chardet==5.2.0
-
-# Performance and caching
-diskcache==5.6.3
-joblib==1.4.2
 
 # Text processing for Bulgarian
 regex==2024.9.11
