@@ -40,10 +40,11 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
         # Build the API URL
         base_url = "https://www.googleapis.com/customsearch/v1"
         
-        # Enhanced query for Bulgarian legal content
+        # Enhanced query for Bulgarian legal content (simplified)
         enhanced_query = query
-        if any(keyword in query.lower() for keyword in ['закон', 'право', 'обезщетение', 'наказание', 'съд']):
-            enhanced_query = f"{query} български"  # Add Bulgarian context for legal terms
+        # Only add Bulgarian context for very short queries
+        if len(query.split()) <= 3 and any(keyword in query.lower() for keyword in ['закон', 'право', 'съд']):
+            enhanced_query = f"{query} български"
         
         params = {
             'key': GOOGLE_CSE_API_KEY,
@@ -60,13 +61,10 @@ def google_cse_search(query: str, site_search: str = None, country: str = "bg", 
         
         # Add site-specific search if specified
         if site_search:
-            # Try both siteSearch parameter and site: operator in query
+            # Use siteSearch parameter instead of site: operator for cleaner queries
             params['siteSearch'] = site_search
             params['siteSearchFilter'] = 'i'  # Include results from this site
-            # Also add site: operator to the query for better coverage
-            enhanced_query = f"site:{site_search} {enhanced_query}"
-            params['q'] = enhanced_query
-            logger.info(f"Searching within domain: {site_search} with enhanced query: {enhanced_query}")
+            logger.info(f"Searching within domain: {site_search} for: {enhanced_query}")
         
         logger.info(f"Google CSE search: {enhanced_query} (country: {country}, lang: {language})")
         
@@ -144,6 +142,7 @@ def google_domain_search(query: str, domains: list = None) -> str:
             # Adjust results per domain based on domain priority
             results_per_domain = 5 if i < 3 else 3  # More results from top domains
             
+            # Try domain search, if it fails try with simpler query
             domain_results = google_cse_search.invoke({
                 "query": query,
                 "site_search": domain,
@@ -151,6 +150,17 @@ def google_domain_search(query: str, domains: list = None) -> str:
                 "language": "lang_bg",
                 "num_results": results_per_domain
             })
+            
+            # If no results and query is long, try with first 5 words
+            if not domain_results and len(query.split()) > 5:
+                shorter_query = ' '.join(query.split()[:5])
+                domain_results = google_cse_search.invoke({
+                    "query": shorter_query,
+                    "site_search": domain,
+                    "country": "bg",
+                    "language": "lang_bg",
+                    "num_results": results_per_domain
+                })
             
             if isinstance(domain_results, list) and domain_results:
                 # Add domain identifier and priority to results
@@ -179,12 +189,9 @@ def google_domain_search(query: str, domains: list = None) -> str:
     
     if not all_results:
         logger.warning("No results from domain search, trying without site restriction")
-        # Try a general search with domain terms included in query
-        domain_terms = " OR ".join([f"site:{domain}" for domain in domains[:3]])  # Top 3 domains
-        general_query = f"{query} ({domain_terms})"
-        
+        # Try a simpler general search first, then add domain restriction if needed
         general_results = google_cse_search.invoke({
-            "query": general_query,
+            "query": query,
             "country": "bg", 
             "language": "lang_bg",
             "num_results": 10
@@ -370,8 +377,8 @@ def process_content(url: str) -> str:
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
         text = ' '.join(chunk for chunk in chunks if chunk)
         
-        # Limit text length
-        result = text[:4000] + "..." if len(text) > 4000 else text
+        # Limit text length for comprehensive processing - INCREASED TO 7K FOR BETTER ANALYSIS
+        result = text[:7000] + "..." if len(text) > 7000 else text
         logger.info(f"Processed content from {url}: {len(result)} characters")
         return result
         
@@ -421,7 +428,7 @@ def internet_search(query: str) -> str:
 
 def get_tools():
     """Return the list of available search tools with Google CSE as primary."""
-    return [
+    base_tools = [
         google_cse_search,
         google_domain_search, 
         internet_search,
@@ -430,3 +437,14 @@ def get_tools():
         current_events_search,
         process_content
     ]
+    
+    # Import enhanced legal tools
+    try:
+        from enhanced_legal_tools import get_enhanced_legal_tools
+        enhanced_tools = get_enhanced_legal_tools()
+        base_tools.extend(enhanced_tools)
+        logger.info(f"Added {len(enhanced_tools)} enhanced legal tools")
+    except Exception as e:
+        logger.warning(f"Enhanced legal tools not available: {e}")
+    
+    return base_tools
