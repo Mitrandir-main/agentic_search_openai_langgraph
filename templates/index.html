@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇧🇬 Bulgarian Legal AI Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f7f7f8;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 768px;
+            height: 100vh;
+            background: white;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            background: white;
+            color: #374151;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #374151;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .message.user .message-avatar {
+            background: #10a37f;
+            color: white;
+            order: 1;
+        }
+
+        .message.assistant .message-avatar {
+            background: #19c37d;
+            color: white;
+        }
+
+        .message-content {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+            line-height: 1.6;
+            color: #374151;
+            max-width: 100%;
+        }
+
+        .message.user .message-content {
+            background: #f0f0f0;
+            color: #374151;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 70%;
+        }
+
+        .message.assistant .message-content {
+            flex: 1;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 10px 0;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .search-progress {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .progress-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-top: 2px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chat-input-container {
+            padding: 16px 24px 24px 24px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .settings-panel {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .settings-panel.show {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .chat-input {
+            flex: 1;
+            min-height: 52px;
+            max-height: 200px;
+            padding: 14px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .chat-input:focus {
+            border-color: #10a37f;
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+        }
+
+        .settings-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .settings-button:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .settings-button.active {
+            background: #10a37f;
+            color: white;
+        }
+
+        .send-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: #10a37f;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: #0f8b6c;
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .control-select, .control-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+
+        .control-select:focus, .control-input:focus {
+            border-color: #10a37f;
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+        }
+
+        .legal-result {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 8px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .legal-result h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .legal-result p {
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+            color: #374151;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .legal-result a {
+            display: inline-block;
+            margin: 8px 8px 8px 0;
+            text-decoration: none;
+            font-size: 14px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message-content, .message.assistant .message-content {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .result-metadata {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .metadata-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .relevancy-score {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .relevancy-high { background: #d4edda; color: #155724; }
+        .relevancy-medium { background: #fff3cd; color: #856404; }
+        .relevancy-low { background: #f8d7da; color: #721c24; }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                width: 100vw;
+                max-width: none;
+                margin: 0;
+            }
+
+            .chat-messages {
+                padding: 16px;
+                max-width: none;
+            }
+
+            .chat-input-container {
+                padding: 16px;
+                max-width: none;
+            }
+
+            .header-title {
+                font-size: 16px;
+            }
+
+            .search-controls {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .message.user .message-content {
+                max-width: 85%;
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">
+        <i class="fas fa-circle"></i> Connecting...
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-title">
+                <i class="fas fa-balance-scale"></i>
+                Bulgarian Legal AI Assistant
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>Здравейте! Аз съм вашият AI помощник за българско законодателство. Можете да ме попитате всичко свързано с:</p>
+                    <ul style="margin: 12px 0; padding-left: 20px;">
+                        <li>📜 Закони и разпоредби</li>
+                        <li>⚖️ Съдебна практика</li>
+                        <li>📋 Правни процедури</li>
+                        <li>🏛️ Административни въпроси</li>
+                    </ul>
+                    <p>Как мога да ви помогна днес?</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="settings-panel" id="settingsPanel">
+                <div class="search-controls">
+                    <div class="control-group">
+                        <label class="control-label">Методология</label>
+                        <select class="control-select" id="methodology">
+                            <option value="enhanced">🚀 Напредна</option>
+                            <option value="vks">⚖️ ВКС (Върховен касационен съд)</option>
+                            <option value="standard">📊 Стандартна</option>
+                            <option value="experimental">🧪 Експериментална</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Макс. резултати</label>
+                        <input type="number" class="control-input" id="maxResults" value="15" min="5" max="50">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Мин. релевантност</label>
+                        <input type="range" class="control-input" id="minRelevancy" value="0.3" min="0.1" max="0.9" step="0.1">
+                        <span style="font-size: 11px; color: #666;" id="relevancyValue">30%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="messageInput" 
+                    placeholder="Задайте въпрос за българското законодателство..."
+                    rows="1"
+                ></textarea>
+                <div class="input-buttons">
+                    <button class="settings-button" id="settingsButton">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="send-button" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LegalChatBot {
+            constructor() {
+                this.ws = null;
+                this.connected = false;
+                this.initializeElements();
+                this.setupEventListeners();
+                this.connectWebSocket();
+            }
+
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.settingsButton = document.getElementById('settingsButton');
+                this.settingsPanel = document.getElementById('settingsPanel');
+                this.connectionStatus = document.getElementById('connectionStatus');
+                this.methodology = document.getElementById('methodology');
+                this.maxResults = document.getElementById('maxResults');
+                this.minRelevancy = document.getElementById('minRelevancy');
+                this.relevancyValue = document.getElementById('relevancyValue');
+            }
+
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.settingsButton.addEventListener('click', () => this.toggleSettings());
+                
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                this.messageInput.addEventListener('input', () => {
+                    this.adjustTextareaHeight();
+                });
+
+                this.minRelevancy.addEventListener('input', (e) => {
+                    this.relevancyValue.textContent = Math.round(e.target.value * 100) + '%';
+                });
+
+                // Close settings when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.settingsPanel.contains(e.target) && !this.settingsButton.contains(e.target)) {
+                        this.settingsPanel.classList.remove('show');
+                        this.settingsButton.classList.remove('active');
+                    }
+                });
+            }
+
+            toggleSettings() {
+                this.settingsPanel.classList.toggle('show');
+                this.settingsButton.classList.toggle('active');
+            }
+
+            connectWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    this.connected = true;
+                    this.updateConnectionStatus(true);
+                    console.log('WebSocket connected');
+                };
+
+                this.ws.onclose = () => {
+                    this.connected = false;
+                    this.updateConnectionStatus(false);
+                    console.log('WebSocket disconnected');
+                    // Reconnect after 3 seconds
+                    setTimeout(() => this.connectWebSocket(), 3000);
+                };
+
+                this.ws.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    this.handleWebSocketMessage(message);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                };
+            }
+
+            updateConnectionStatus(connected) {
+                if (connected) {
+                    this.connectionStatus.className = 'connection-status connected';
+                    this.connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Connected';
+                } else {
+                    this.connectionStatus.className = 'connection-status disconnected';
+                    this.connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Disconnected';
+                }
+            }
+
+            handleWebSocketMessage(message) {
+                switch (message.type) {
+                    case 'search_start':
+                        this.showSearchProgress('🔍 Започвам търсене...');
+                        break;
+                    case 'search_status':
+                        if (message.status === 'vks_search') {
+                            this.showSearchProgress('⚖️ Търся в база данни на ВКС...');
+                        } else if (message.status === 'vks_analysis') {
+                            this.showSearchProgress('🧠 AI анализира решенията на ВКС...');
+                        } else if (message.status === 'vks_searching') {
+                            this.showSearchProgress('🔍 Търся в базата данни на Върховния касационен съд...');
+                        } else if (message.message) {
+                            this.showSearchProgress(message.message);
+                        }
+                        break;
+                    case 'search_complete':
+                        this.hideSearchProgress();
+                        break;
+                    case 'search_error':
+                        this.hideSearchProgress();
+                        this.showError('Възникна грешка при търсенето: ' + (message.error || message.message));
+                        break;
+                }
+            }
+
+            async sendMessage() {
+                const query = this.messageInput.value.trim();
+                if (!query) return;
+
+                this.addMessage('user', query);
+                this.messageInput.value = '';
+                this.adjustTextareaHeight();
+                this.sendButton.disabled = true;
+
+                try {
+                    this.showTypingIndicator();
+                    
+                    const response = await fetch('/api/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: query,
+                            max_results: parseInt(this.maxResults.value),
+                            min_relevancy: parseFloat(this.minRelevancy.value),
+                            methodology: this.methodology.value
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('API Response:', data); // Debug logging
+                    
+                    this.hideTypingIndicator();
+                    
+                    // Handle different response formats
+                    let content = data.results || data.message || data;
+                    
+                    this.addMessage('assistant', content, {
+                        processingTime: data.processing_time,
+                        metadata: data.metadata
+                    });
+
+                } catch (error) {
+                    this.hideTypingIndicator();
+                    this.showError('Възникна грешка: ' + error.message);
+                } finally {
+                    this.sendButton.disabled = false;
+                }
+            }
+
+            addMessage(type, content, metadata = null) {
+                try {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `message ${type}`;
+
+                    const avatar = type === 'user' 
+                        ? '<i class="fas fa-user"></i>'
+                        : '<i class="fas fa-robot"></i>';
+
+                    let metadataHtml = '';
+                    if (metadata) {
+                        try {
+                            metadataHtml = `
+                                <div class="result-metadata">
+                                    <div class="metadata-item">
+                                        <i class="fas fa-clock"></i>
+                                        ${metadata.processingTime?.toFixed(2) || 'N/A'}s
+                                    </div>
+                                    <div class="metadata-item">
+                                        <i class="fas fa-chart-bar"></i>
+                                        ${metadata.metadata?.max_results || 'N/A'} резултата
+                                    </div>
+                                    <div class="metadata-item">
+                                        <i class="fas fa-filter"></i>
+                                        ${Math.round((metadata.metadata?.min_relevancy || 0) * 100)}% мин. релевантност
+                                    </div>
+                                </div>
+                            `;
+                        } catch (metaError) {
+                            console.warn('Error formatting metadata:', metaError);
+                            metadataHtml = '';
+                        }
+                    }
+
+                    const formattedContent = this.formatContent(content);
+
+                    messageDiv.innerHTML = `
+                        <div class="message-avatar">${avatar}</div>
+                        <div class="message-content">
+                            ${formattedContent}
+                            ${metadataHtml}
+                        </div>
+                    `;
+
+                    this.chatMessages.appendChild(messageDiv);
+                    this.scrollToBottom();
+                } catch (error) {
+                    console.error('Error in addMessage:', error, 'Content:', content);
+                    // Fallback: add a simple error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = `message ${type}`;
+                    errorDiv.innerHTML = `
+                        <div class="message-avatar"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="message-content">
+                            <div style="color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px;">
+                                <strong>Възникна грешка при показване на съобщението</strong><br>
+                                Моля, опитайте отново или се свържете с поддръжката.
+                                <details style="margin-top: 8px;">
+                                    <summary>Техническа информация</summary>
+                                    <pre style="font-size: 11px;">${error.message}</pre>
+                                </details>
+                            </div>
+                        </div>
+                    `;
+                    this.chatMessages.appendChild(errorDiv);
+                    this.scrollToBottom();
+                }
+            }
+
+            formatContent(content) {
+                try {
+                    // Debug logging
+                    console.log('formatContent received:', typeof content, content);
+                    
+                    // Handle different content types
+                    let textContent = '';
+                    
+                    if (typeof content === 'string') {
+                        textContent = content;
+                    } else if (typeof content === 'object' && content !== null) {
+                        // If it's an array of results, format them
+                        if (Array.isArray(content)) {
+                            textContent = content.map(item => {
+                                if (typeof item === 'string') return item;
+                                if (item && typeof item === 'object') {
+                                    return `<div class="legal-result">
+                                        <h4>${item.title || 'Правен документ'}</h4>
+                                        <p>${item.snippet || item.content || 'Няма налично съдържание'}</p>
+                                        ${item.url ? `<a href="${item.url}" target="_blank" style="color: #1e3c72; text-decoration: none;">🔗 Виж документа</a>` : ''}
+                                        ${item.relevancy ? `<span class="relevancy-score relevancy-${this.getRelevancyClass(item.relevancy)}">${Math.round(item.relevancy * 100)}% релевантност</span>` : ''}
+                                    </div>`;
+                                }
+                                return String(item);
+                            }).join('');
+                        } else {
+                            // Single object
+                            if (content.results && Array.isArray(content.results)) {
+                                return this.formatContent(content.results);
+                            } else if (content.message) {
+                                textContent = content.message;
+                            } else {
+                                textContent = JSON.stringify(content, null, 2);
+                            }
+                        }
+                    } else {
+                        textContent = String(content);
+                    }
+                    
+                    // Basic markdown-like formatting for legal content
+                    let formatted = textContent.replace(/\n/g, '<br>');
+                    
+                    // Highlight legal references
+                    formatted = formatted.replace(/(чл\.\s*\d+[а-я]*)/gi, '<strong style="color: #1e3c72;">$1</strong>');
+                    formatted = formatted.replace(/(ал\.\s*\d+)/gi, '<strong style="color: #2a5298;">$1</strong>');
+                    
+                    return formatted;
+                } catch (error) {
+                    console.error('Error in formatContent:', error, 'Content:', content);
+                    return `<div style="color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px;">
+                        <strong>Грешка при форматиране на съдържанието:</strong><br>
+                        ${error.message}<br>
+                        <details style="margin-top: 8px;">
+                            <summary>Детайли за разработчици</summary>
+                            <pre style="font-size: 11px; margin-top: 4px;">${JSON.stringify(content, null, 2)}</pre>
+                        </details>
+                    </div>`;
+                }
+            }
+
+            getRelevancyClass(score) {
+                if (score >= 0.7) return 'high';
+                if (score >= 0.4) return 'medium';
+                return 'low';
+            }
+
+            showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message assistant';
+                typingDiv.id = 'typingIndicator';
+                typingDiv.innerHTML = `
+                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                `;
+                this.chatMessages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                const typing = document.getElementById('typingIndicator');
+                if (typing) typing.remove();
+            }
+
+            showSearchProgress(message) {
+                const progressDiv = document.createElement('div');
+                progressDiv.className = 'search-progress';
+                progressDiv.id = 'searchProgress';
+                progressDiv.innerHTML = `
+                    <div class="progress-spinner"></div>
+                    <span>${message}</span>
+                `;
+                this.chatMessages.appendChild(progressDiv);
+                this.scrollToBottom();
+            }
+
+            hideSearchProgress() {
+                const progress = document.getElementById('searchProgress');
+                if (progress) progress.remove();
+            }
+
+            showError(message) {
+                this.addMessage('assistant', `❌ ${message}`);
+            }
+
+            adjustTextareaHeight() {
+                this.messageInput.style.height = 'auto';
+                this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+            }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+        }
+
+        // Initialize the chat bot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new LegalChatBot();
+        });
+    </script>
+</body>
+</html> 

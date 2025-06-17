@@ -1,0 +1,139 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# VKS.bg Integration - Bulgarian Legal AI Assistant
+
+## Overview
+The VKS.bg integration provides specialized access to the Supreme Court of Bulgaria's database, enabling users to search for court decisions, rulings, and legal precedents directly from the highest judicial authority in Bulgaria.
+
+## Integration Architecture
+
+### 1. VKS Search Flow
+```
+User Query → VKS Search Engine → Document Retrieval → AI Analysis → Best Document Selection → Full Content Analysis → Formatted Response
+```
+
+### 2. Search Methods Hierarchy
+
+#### **Primary Method: Google Custom Search Engine**
+- High accuracy and relevance
+- Real-time access to indexed VKS content
+- Comprehensive coverage of VKS database
+- Advanced ranking algorithms
+
+#### **Fallback Method: DuckDuckGo Search**
+- No API key requirements
+- Privacy-focused search
+- Alternative indexing perspective
+- Reliable fallback option
+
+#### **Simulation Method: Realistic Test Data**
+- Development and testing
+- API unavailability scenarios
+- Demonstration purposes
+- Quality assurance testing
+
+## Document Classification System
+
+### 1. Document Type Recognition
+```python
+DOCUMENT_TYPES = {
+    "решение": "Court Decision - Final ruling on a case",
+    "определение": "Court Order - Procedural or interim decision", 
+    "постановление": "Court Decree - Administrative or regulatory decision",
+    "разпореждане": "Court Directive - Specific instruction or mandate"
+}
+```
+
+### 2. Legal Area Classification
+```python
+LEGAL_AREAS = {
+    "гражданско право": ["гражд", "договор", "собственост", "наследство"],
+    "наказателно право": ["наказ", "престъпление", "санкция", "кривично"],
+    "търговско право": ["търг", "дружество", "търговец", "конкуренция"],
+    "административно право": ["админ", "държава", "акт", "производство"],
+    "трудово право": ["труд", "работа", "заплата", "отпуск"],
+    "семейно право": ["семейство", "брак", "развод", "дете"],
+    "данъчно право": ["данък", "такса", "декларация", "НАП"],
+    "социално право": ["социал", "пенсия", "обезщетение", "инвалидност"]
+}
+```
+
+## API Integration
+
+### 1. Main Search Endpoint Integration
+```python
+elif methodology == "vks":
+    vks_results = vks_bg_search(request.query, request.max_results)
+    analysis = await analyze_vks_documents(request.query, vks_results)
+    search_results = format_vks_results(request.query, vks_results, analysis)
+```
+
+### 2. Dedicated VKS Endpoint
+```python
+@app.post("/api/vks-search")
+async def vks_search_endpoint(request: SearchRequest):
+    """Dedicated endpoint for VKS-only searches"""
+```
+
+## Frontend Integration
+
+### 1. Methodology Selection
+```html
+<option value="vks">⚖️ ВКС (Върховен касационен съд)</option>
+```
+
+### 2. VKS-Specific UI Elements
+```javascript
+case 'vks_search':
+    this.showSearchProgress('⚖️ Търся в ВКС база данни...');
+    break;
+case 'vks_analysis':
+    this.showSearchProgress('🧠 AI анализира решенията на ВКС...');
+    break;
+```
+
+## Result Formatting
+
+**Output Format:**
+```
+⚖️ **РЕЗУЛТАТИ ОТ ВЪРХОВЕН КАСАЦИОНЕН СЪД** за: 'query'
+
+🧠 **AI АНАЛИЗ:**
+[Detailed AI analysis of the documents and their relevance]
+
+📋 **НАЙ-РЕЛЕВАНТНИ ДОКУМЕНТИ:**
+1. **Решение № 1234/2024 по гражданско право**
+   📄 [Document description]
+   🔗 [Document link]
+   📂 Правна област: гражданско право
+   📋 Тип: решение
+   📝 Дело № 1234/2024
+
+📊 **СТАТИСТИКА:**
+• Общо документи: 5
+• Анализирани документи: 5
+• Избрани за подробен анализ: 3
+• Правни области: гражданско право, трудово право
+
+⚖️ **Източник**: Върховен касационен съд на Република България
+```
+
+## Testing & Quality Assurance
+
+### Test Scenarios
+```python
+VKS_TEST_QUERIES = [
+    "обезщетение за трудова злополука",
+    "договор за купопродажба недвижим имот", 
+    "наказание за телесна повреда",
+    "развод и алименти за деца",
+    "данъчно облагане на доходи"
+]
+```
+
+---
+
+*This document provides comprehensive technical specifications for the VKS.bg integration within the Bulgarian Legal AI Assistant.*

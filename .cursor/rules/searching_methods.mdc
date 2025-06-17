@@ -1,0 +1,335 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Searching Methods - Bulgarian Legal AI Assistant
+
+## Overview
+The Bulgarian Legal AI Assistant employs sophisticated multi-layered search methodologies to provide comprehensive and accurate legal information retrieval. This document details the search algorithms, data sources, and optimization strategies implemented in the system.
+
+## Core Search Architecture
+
+### 1. Enhanced Legal Search Framework
+```
+User Query → AI Query Expansion → Multi-Source Search → Content Extraction → Relevancy Scoring → Result Presentation
+     ↓              ↓                    ↓                   ↓                 ↓                ↓
+   Bulgarian    Legal Terms         Parallel Domain      Deep Content     AI-Powered       Formatted
+   Language     Normalization       Search Execution     Processing       Analysis         Results
+   Processing
+```
+
+### 2. Three-Phase Search Methodology
+
+#### **Phase 1: Intelligent Query Expansion via AI Reasoning**
+```python
+class QueryExpansionAgent:
+    def expand_query(self, user_query: str) -> List[str]:
+        """
+        Expands Bulgarian legal queries using AI-powered reasoning
+        """
+        # Legal terminology analysis
+        legal_terms = self.extract_legal_entities(user_query)
+        
+        # Semantic expansion
+        expanded_terms = self.generate_legal_synonyms(legal_terms)
+        
+        # Context-aware variations
+        contextual_queries = self.build_contextual_variations(user_query)
+        
+        return self.combine_and_prioritize_queries(expanded_terms, contextual_queries)
+```
+
+**Key Features:**
+- Bulgarian legal terminology recognition
+- Semantic similarity expansion
+- Context-aware query variations
+- Legal procedure understanding
+- Synonym and related term generation
+
+#### **Phase 2: Multi-Source Search Execution**
+```python
+class MultiSourceSearchEngine:
+    LEGAL_DOMAINS = [
+        'ciela.net',      # Comprehensive legal database
+        'apis.bg',        # Government legislation portal  
+        'lakorda.com'     # Legal practice resources
+    ]
+    
+    async def execute_parallel_search(self, queries: List[str]) -> Dict:
+        """
+        Executes parallel searches across multiple legal domains
+        """
+        search_tasks = []
+        for domain in self.LEGAL_DOMAINS:
+            for query in queries:
+                task = self.search_domain(domain, query)
+                search_tasks.append(task)
+        
+        results = await asyncio.gather(*search_tasks)
+        return self.aggregate_and_deduplicate(results)
+```
+
+**Search Targets:**
+- **Ciela.net**: Premium legal database with comprehensive coverage
+- **APIs.bg**: Official government legislation and regulations
+- **Lakorda.com**: Legal practice insights and case studies
+
+#### **Phase 3: Deep Content Extraction and Analysis**
+```python
+class ContentExtractionEngine:
+    def deep_extract_content(self, search_results: List[Dict]) -> List[Dict]:
+        """
+        Performs deep content extraction from legal documents
+        """
+        extracted_results = []
+        for result in search_results:
+            # Fetch full document content
+            full_content = self.fetch_document_content(result['url'])
+            
+            # Parse legal document structure
+            structured_content = self.parse_legal_structure(full_content)
+            
+            # Extract metadata
+            metadata = self.extract_legal_metadata(structured_content)
+            
+            extracted_results.append({
+                'original': result,
+                'content': structured_content,
+                'metadata': metadata
+            })
+        
+        return extracted_results
+```
+
+## Advanced Search Features
+
+### 1. Bulgarian Legal NLP Processing
+
+#### **Legal Entity Recognition**
+```python
+class BulgarianLegalNLP:
+    LEGAL_PATTERNS = {
+        'articles': r'чл\.\s*\d+[а-я]*',
+        'paragraphs': r'ал\.\s*\d+',
+        'laws': r'[Зз]акон\s+за\s+[а-яё\s]+',
+        'codes': r'[Кк]одекс\s+[а-яё\s]+',
+        'regulations': r'[Нн]аредба\s+[а-яё\s]+'
+    }
+    
+    def extract_legal_entities(self, text: str) -> Dict[str, List[str]]:
+        """Extract Bulgarian legal entities from text"""
+        entities = {}
+        for entity_type, pattern in self.LEGAL_PATTERNS.items():
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            entities[entity_type] = matches
+        return entities
+```
+
+#### **Term Normalization**
+- **Morphological Analysis**: Handling Bulgarian noun declensions
+- **Synonym Mapping**: Legal term equivalents and variations  
+- **Abbreviation Expansion**: Converting legal abbreviations to full terms
+- **Context-Sensitive Processing**: Understanding term meanings in legal context
+
+### 2. Relevancy Scoring Algorithm
+
+#### **Multi-Factor Scoring System**
+```python
+class BulgarianLegalRelevancyScorer:
+    SCORING_WEIGHTS = {
+        'semantic_similarity': 0.35,
+        'legal_authority_level': 0.25,
+        'content_freshness': 0.15,
+        'domain_reputation': 0.15,
+        'exact_term_matches': 0.10
+    }
+    
+    def calculate_relevancy_score(self, result: Dict, query: str) -> float:
+        """Calculate comprehensive relevancy score"""
+        scores = {}
+        
+        # Semantic similarity using embeddings
+        scores['semantic'] = self.calculate_semantic_similarity(result['content'], query)
+        
+        # Legal authority level (law > regulation > guideline)
+        scores['authority'] = self.assess_legal_authority(result['metadata'])
+        
+        # Content freshness (recent = higher score)
+        scores['freshness'] = self.calculate_freshness_score(result['date'])
+        
+        # Domain reputation (official > academic > commercial)
+        scores['domain'] = self.get_domain_reputation_score(result['source'])
+        
+        # Exact term matches
+        scores['exact_matches'] = self.count_exact_term_matches(result['content'], query)
+        
+        # Weighted final score
+        final_score = sum(
+            scores[key] * self.SCORING_WEIGHTS[f'{key}_weight'] 
+            for key in scores.keys()
+        )
+        
+        return min(final_score, 1.0)  # Cap at 1.0
+```
+
+#### **Scoring Factors:**
+1. **Semantic Similarity (35%)**: AI-powered content similarity analysis
+2. **Legal Authority Level (25%)**: Document type hierarchy weighting
+3. **Content Freshness (15%)**: Recency and validity of legal information
+4. **Domain Reputation (15%)**: Source credibility and authority
+5. **Exact Term Matches (10%)**: Direct query term presence
+
+### 3. Adaptive Search Optimization
+
+#### **Dynamic Threshold Adjustment**
+```python
+class AdaptiveSearchOptimizer:
+    def calculate_adaptive_threshold(self, results: List[Dict]) -> float:
+        """
+        Dynamically adjust relevancy threshold based on result quality
+        """
+        if not results:
+            return self.MIN_RELEVANCY_THRESHOLD
+        
+        scores = [r['relevancy_score'] for r in results]
+        mean_score = statistics.mean(scores)
+        std_dev = statistics.stdev(scores) if len(scores) > 1 else 0
+        
+        # Adaptive threshold: mean - 0.5 * std_dev, but not below minimum
+        adaptive_threshold = max(
+            mean_score - (0.5 * std_dev),
+            self.MIN_RELEVANCY_THRESHOLD
+        )
+        
+        return adaptive_threshold
+```
+
+#### **Search Quality Gates**
+- **Minimum Result Count**: Ensuring adequate search coverage
+- **Quality Distribution Analysis**: Checking result quality spread
+- **Gap Detection**: Identifying missing information areas
+- **Fallback Strategy Activation**: Triggering alternative search methods
+
+## Search Performance Optimization
+
+### 1. Parallel Processing Architecture
+
+#### **Concurrent Domain Searches**
+```python
+class ParallelSearchExecutor:
+    async def execute_domain_searches(self, query: str) -> Dict:
+        """Execute searches across domains concurrently"""
+        async with aiohttp.ClientSession() as session:
+            tasks = [
+                self.search_domain(session, 'ciela.net', query),
+                self.search_domain(session, 'apis.bg', query),
+                self.search_domain(session, 'lakorda.com', query)
+            ]
+            
+            domain_results = await asyncio.gather(*tasks, return_exceptions=True)
+            return self.process_concurrent_results(domain_results)
+```
+
+#### **Batch Processing Optimization**
+- **Query Batching**: Processing multiple queries simultaneously
+- **Content Extraction Batching**: Bulk document processing
+- **API Request Optimization**: Minimizing API calls through batching
+
+### 2. Caching Strategies
+
+#### **Multi-Level Caching**
+```python
+class SearchCacheManager:
+    def __init__(self):
+        self.query_cache = {}           # Query result caching
+        self.content_cache = {}         # Extracted content caching
+        self.relevancy_cache = {}       # Relevancy score caching
+        
+    def get_cached_results(self, query_hash: str) -> Optional[List[Dict]]:
+        """Retrieve cached search results"""
+        if query_hash in self.query_cache:
+            if not self.is_cache_expired(self.query_cache[query_hash]):
+                return self.query_cache[query_hash]['results']
+        return None
+```
+
+**Cache Types:**
+- **Query Results Cache**: Storing complete search results
+- **Content Extraction Cache**: Caching processed document content
+- **Relevancy Score Cache**: Storing computed relevancy scores
+- **Domain Response Cache**: Caching raw domain search responses
+
+### 3. Error Handling and Resilience
+
+#### **Robust Error Recovery**
+```python
+class SearchErrorHandler:
+    def handle_domain_failure(self, domain: str, error: Exception) -> Dict:
+        """Handle domain-specific search failures"""
+        if isinstance(error, TimeoutError):
+            return self.retry_with_backoff(domain)
+        elif isinstance(error, HTTPError):
+            return self.fallback_to_cached_results(domain)
+        else:
+            return self.skip_domain_gracefully(domain, error)
+```
+
+**Error Handling Features:**
+- **Domain Failure Isolation**: Preventing single domain failures from breaking search
+- **Automatic Retry Logic**: Intelligent retry strategies with exponential backoff
+- **Graceful Degradation**: Continuing with partial results when some sources fail
+- **Fallback Search Methods**: Alternative search strategies for error scenarios
+
+## Search Analytics and Monitoring
+
+### 1. Performance Metrics
+
+#### **Search Quality Metrics**
+```python
+class SearchAnalytics:
+    def calculate_search_metrics(self, search_session: Dict) -> Dict:
+        """Calculate comprehensive search performance metrics"""
+        return {
+            'total_processing_time': search_session['end_time'] - search_session['start_time'],
+            'query_expansion_time': search_session['phase1_duration'],
+            'search_execution_time': search_session['phase2_duration'],
+            'content_processing_time': search_session['phase3_duration'],
+            'average_relevancy_score': statistics.mean(search_session['relevancy_scores']),
+            'result_count_by_domain': search_session['domain_statistics'],
+            'cache_hit_rate': search_session['cache_statistics']['hit_rate']
+        }
+```
+
+**Tracked Metrics:**
+- **Processing Time**: End-to-end search performance
+- **Result Quality**: Average relevancy scores and distribution
+- **Domain Coverage**: Results count per legal source
+- **Cache Performance**: Hit rates and efficiency
+- **Error Rates**: Search failure analysis
+
+### 2. Search Optimization Insights
+
+#### **Query Pattern Analysis**
+- **Popular Legal Topics**: Most searched Bulgarian legal areas
+- **Query Complexity Distribution**: Simple vs. complex query patterns
+- **Search Success Rates**: Query resolution effectiveness
+- **User Interaction Patterns**: Engagement with search results
+
+## Future Search Enhancements
+
+### 1. Advanced Search Capabilities
+- **Semantic Search**: Vector-based semantic search implementation
+- **Citation Network Analysis**: Following legal document citations
+- **Temporal Search**: Time-aware legal document search
+- **Multilingual Support**: English-Bulgarian legal term translation
+
+### 2. AI-Powered Search Evolution
+- **Predictive Search**: Anticipating user search needs
+- **Contextual Result Ranking**: Session-aware result prioritization
+- **Automated Query Refinement**: AI-suggested query improvements
+- **Legal Precedent Mapping**: Advanced case law relationship analysis
+
+---
+
+*This document provides a comprehensive overview of the search methodologies powering the Bulgarian Legal AI Assistant. The system continues to evolve with advancing search technologies and user feedback.*

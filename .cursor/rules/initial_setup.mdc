@@ -1,0 +1,568 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Initial Setup - Bulgarian Legal AI Assistant
+
+## Overview
+This document provides comprehensive setup instructions for the Bulgarian Legal AI Assistant, including development environment configuration, dependencies installation, and deployment preparation.
+
+## Prerequisites
+
+### 1. System Requirements
+```bash
+# Minimum System Requirements
+- Python 3.9+ (Recommended: Python 3.11)
+- Node.js 16+ (for frontend tooling)
+- Git 2.30+
+- 4GB RAM minimum (8GB recommended)
+- 10GB free disk space
+
+# Operating System Support
+- Ubuntu 20.04+ / Debian 11+
+- Windows 10/11 with WSL2
+- macOS 11+
+- Docker (alternative deployment)
+```
+
+### 2. Required Accounts and API Keys
+```bash
+# OpenAI API Access
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Google Custom Search Engine (for legal document search)
+GOOGLE_CSE_ID=your_google_cse_id
+GOOGLE_API_KEY=your_google_api_key
+
+# Optional: Analytics and Monitoring
+SENTRY_DSN=your_sentry_dsn (optional)
+```
+
+## Installation Process
+
+### 1. Repository Setup
+```bash
+# Clone the repository
+git clone https://github.com/your-username/SearchAgentDido.git
+cd SearchAgentDido
+
+# Create and activate virtual environment
+python -m venv venv
+
+# Linux/macOS
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+
+# Verify Python version
+python --version  # Should be 3.9+
+```
+
+### 2. Core Dependencies Installation
+```bash
+# Install core Python dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Key dependencies included:
+# - fastapi>=0.104.0           # Web framework
+# - uvicorn[standard]>=0.24.0  # ASGI server
+# - langchain>=0.0.350         # LLM orchestration
+# - langgraph>=0.0.20          # AI agent workflows
+# - openai>=1.3.0             # OpenAI API client
+# - aiohttp>=3.8.0            # Async HTTP client
+# - beautifulsoup4>=4.12.0    # HTML parsing
+# - pydantic>=2.5.0           # Data validation
+# - python-multipart>=0.0.6   # Form data handling
+```
+
+### 3. Environment Configuration
+```bash
+# Create environment configuration file
+cp .env.example .env
+
+# Edit the .env file with your API keys
+nano .env
+```
+
+#### **.env Configuration Template**
+```bash
+# Core Application Settings
+APP_NAME="Bulgarian Legal AI Assistant"
+APP_VERSION="1.0.0"
+DEBUG=True
+HOST=127.0.0.1
+PORT=8000
+
+# AI Services Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MAX_TOKENS=4000
+OPENAI_TEMPERATURE=0.1
+
+# Search Engine Configuration
+GOOGLE_CSE_ID=your_google_custom_search_engine_id
+GOOGLE_API_KEY=your_google_api_key
+SEARCH_TIMEOUT=30
+MAX_CONCURRENT_SEARCHES=10
+
+# Legal Domain Configuration
+CIELA_DOMAIN=ciela.net
+APIS_DOMAIN=apis.bg  
+LAKORDA_DOMAIN=lakorda.com
+
+# Performance Settings
+CACHE_TTL=3600
+MAX_RESULTS_PER_DOMAIN=5
+DEFAULT_RELEVANCY_THRESHOLD=0.3
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=logs/app.log
+
+# Security Settings
+CORS_ORIGINS=["http://localhost:3000", "http://127.0.0.1:8000"]
+ALLOWED_HOSTS=["localhost", "127.0.0.1"]
+
+# Optional: Monitoring and Analytics
+SENTRY_DSN=your_sentry_dsn_for_error_tracking
+ANALYTICS_ENABLED=False
+```
+
+### 4. Directory Structure Setup
+```bash
+# Create necessary directories
+mkdir -p logs
+mkdir -p cache
+mkdir -p static/css
+mkdir -p static/js
+mkdir -p static/images
+mkdir -p tests
+mkdir -p docs
+
+# Set appropriate permissions
+chmod 755 logs cache
+```
+
+## Project Structure Overview
+
+```
+SearchAgentDido/
+├── agentic_search_openai_langgraph/    # Main application directory
+│   ├── __init__.py
+│   ├── main.py                         # FastAPI application entry point
+│   ├── enhanced_legal_tools.py         # Core legal search tools
+│   ├── tools.py                       # Search engine tools
+│   ├── relevancy_scoring.py           # Result scoring algorithms
+│   └── templates/
+│       └── index.html                 # Frontend interface
+├── static/                            # Static assets
+│   ├── css/
+│   ├── js/
+│   └── images/
+├── logs/                             # Application logs
+├── cache/                            # Search result cache
+├── tests/                            # Test suite
+├── docs/                             # Documentation
+├── requirements.txt                  # Python dependencies
+├── .env.example                      # Environment template
+├── .env                             # Environment configuration
+├── .gitignore                       # Git ignore rules
+└── README.md                        # Project documentation
+```
+
+## Development Environment Setup
+
+### 1. FastAPI Development Server
+```bash
+# Navigate to the application directory
+cd agentic_search_openai_langgraph
+
+# Start the development server
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+# Alternative: Using Python directly
+python -m uvicorn main:app --reload
+
+# Server will be available at:
+# http://127.0.0.1:8000 (main interface)
+# http://127.0.0.1:8000/docs (API documentation)
+```
+
+### 2. Development Tools Setup
+```bash
+# Install development dependencies
+pip install pytest pytest-asyncio black flake8 mypy
+
+# Code formatting
+black . --line-length 88
+
+# Linting
+flake8 . --max-line-length=88 --ignore=E203,W503
+
+# Type checking
+mypy agentic_search_openai_langgraph/
+```
+
+### 3. Testing Setup
+```bash
+# Run test suite
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=agentic_search_openai_langgraph --cov-report=html
+
+# Test specific components
+pytest tests/test_search_tools.py -v
+pytest tests/test_relevancy_scoring.py -v
+```
+
+## Configuration Details
+
+### 1. Search Engine Configuration
+
+#### **Google Custom Search Engine Setup**
+```bash
+# 1. Create Google Custom Search Engine
+# Visit: https://cse.google.com/cse/create/new
+# Add domains: ciela.net, apis.bg, lakorda.com
+
+# 2. Get Search Engine ID
+# Format: 1234567890abcdefg:hijklmnop
+
+# 3. Enable Google Custom Search API
+# Visit: https://console.developers.google.com/
+# Enable "Custom Search API"
+
+# 4. Create API Key
+# Restrict to Custom Search API only
+```
+
+#### **Legal Domain Configuration**
+```python
+# Domain-specific search settings
+LEGAL_DOMAINS = {
+    'ciela.net': {
+        'priority': 1,          # Highest priority
+        'timeout': 30,          # Request timeout
+        'max_results': 5,       # Results per query
+        'rate_limit': 10        # Requests per minute
+    },
+    'apis.bg': {
+        'priority': 2,          # Government source
+        'timeout': 25,
+        'max_results': 5,
+        'rate_limit': 15
+    },
+    'lakorda.com': {
+        'priority': 3,          # Legal practice
+        'timeout': 20,
+        'max_results': 3,
+        'rate_limit': 20
+    }
+}
+```
+
+### 2. AI Model Configuration
+
+#### **OpenAI Settings**
+```python
+# Model configuration for different tasks
+AI_MODELS = {
+    'query_expansion': {
+        'model': 'gpt-4-turbo-preview',
+        'temperature': 0.1,
+        'max_tokens': 1000
+    },
+    'content_analysis': {
+        'model': 'gpt-4-turbo-preview', 
+        'temperature': 0.2,
+        'max_tokens': 2000
+    },
+    'result_summarization': {
+        'model': 'gpt-3.5-turbo',
+        'temperature': 0.3,
+        'max_tokens': 1500
+    }
+}
+```
+
+### 3. Caching Configuration
+```bash
+# Cache settings for performance optimization
+CACHE_CONFIG = {
+    'search_results': {
+        'ttl': 3600,           # 1 hour cache
+        'max_size': 1000       # Max cached queries
+    },
+    'content_extraction': {
+        'ttl': 86400,          # 24 hour cache
+        'max_size': 500        # Max cached documents
+    },
+    'relevancy_scores': {
+        'ttl': 7200,           # 2 hour cache
+        'max_size': 2000       # Max cached scores
+    }
+}
+```
+
+## Database Setup (Optional)
+
+### 1. SQLite Setup (Default)
+```bash
+# SQLite database automatically created
+# Location: cache/search_cache.db
+# No additional setup required
+```
+
+### 2. PostgreSQL Setup (Production)
+```bash
+# Install PostgreSQL
+sudo apt install postgresql postgresql-contrib
+
+# Create database and user
+sudo -u postgres psql
+CREATE DATABASE bulgarian_legal_ai;
+CREATE USER legal_ai_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE bulgarian_legal_ai TO legal_ai_user;
+\q
+
+# Update .env file
+DATABASE_URL=postgresql://legal_ai_user:secure_password@localhost/bulgarian_legal_ai
+```
+
+## Security Configuration
+
+### 1. API Key Security
+```bash
+# Secure API key storage
+echo "OPENAI_API_KEY=your_key_here" >> .env
+chmod 600 .env
+
+# Never commit API keys to git
+echo ".env" >> .gitignore
+```
+
+### 2. CORS Configuration
+```python
+# Configure allowed origins
+CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:8000", 
+    "https://yourdomain.com"
+]
+```
+
+### 3. Rate Limiting
+```python
+# API rate limiting configuration
+RATE_LIMITS = {
+    'search_requests': '100/hour',
+    'ai_requests': '50/hour',
+    'content_extraction': '200/hour'
+}
+```
+
+## Performance Optimization
+
+### 1. System Optimization
+```bash
+# Increase file descriptor limits
+echo "* soft nofile 65536" >> /etc/security/limits.conf
+echo "* hard nofile 65536" >> /etc/security/limits.conf
+
+# Optimize Python for production
+export PYTHONOPTIMIZE=1
+export PYTHONDONTWRITEBYTECODE=1
+```
+
+### 2. Application Optimization
+```python
+# Async configuration
+ASYNC_CONFIG = {
+    'max_workers': 10,
+    'timeout': 30,
+    'keep_alive': True,
+    'connection_pool_size': 100
+}
+```
+
+## Logging Configuration
+
+### 1. Application Logging
+```python
+# Logging configuration
+LOGGING_CONFIG = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'default': {
+            'level': 'INFO',
+            'formatter': 'standard',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'INFO',
+            'formatter': 'standard',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/app.log',
+            'mode': 'a',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['default', 'file'],
+            'level': 'INFO',
+            'propagate': False
+        }
+    }
+}
+```
+
+## Health Checks and Monitoring
+
+### 1. Application Health Check
+```bash
+# Health check endpoint
+curl http://127.0.0.1:8000/health
+
+# Expected response:
+{
+    "status": "healthy",
+    "version": "1.0.0",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "services": {
+        "openai": "connected",
+        "google_cse": "connected", 
+        "cache": "operational"
+    }
+}
+```
+
+### 2. System Monitoring
+```bash
+# Monitor application logs
+tail -f logs/app.log
+
+# Monitor system resources
+htop
+
+# Monitor network connections
+netstat -tulpn | grep :8000
+```
+
+## Troubleshooting Common Issues
+
+### 1. API Key Issues
+```bash
+# Verify OpenAI API key
+curl -H "Authorization: Bearer your-api-key" \
+     https://api.openai.com/v1/models
+
+# Check Google CSE configuration
+curl "https://www.googleapis.com/customsearch/v1?key=YOUR_API_KEY&cx=YOUR_CSE_ID&q=test"
+```
+
+### 2. Dependency Issues
+```bash
+# Clear pip cache
+pip cache purge
+
+# Reinstall dependencies
+pip uninstall -r requirements.txt -y
+pip install -r requirements.txt
+
+# Check for conflicts
+pip check
+```
+
+### 3. Permission Issues
+```bash
+# Fix directory permissions
+chmod -R 755 logs cache static
+chown -R $USER:$USER logs cache static
+```
+
+### 4. Port Conflicts
+```bash
+# Check port availability
+netstat -tulpn | grep :8000
+
+# Use alternative port
+uvicorn main:app --port 8001
+```
+
+## Deployment Preparation
+
+### 1. Production Environment
+```bash
+# Set production environment
+export ENVIRONMENT=production
+export DEBUG=False
+
+# Use production ASGI server
+pip install gunicorn
+
+# Start with Gunicorn
+gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+```
+
+### 2. Docker Deployment
+```dockerfile
+# Dockerfile example
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+## Development Workflow
+
+### 1. Git Workflow
+```bash
+# Initialize git repository
+git init
+git add .
+git commit -m "Initial commit"
+
+# Create development branch
+git checkout -b development
+
+# Feature branch workflow
+git checkout -b feature/new-search-algorithm
+git add .
+git commit -m "Add new search algorithm"
+git push origin feature/new-search-algorithm
+```
+
+### 2. Testing Workflow
+```bash
+# Run tests before commits
+pytest tests/ -v
+
+# Pre-commit hooks
+pip install pre-commit
+pre-commit install
+
+# Code quality checks
+black . --check
+flake8 .
+mypy agentic_search_openai_langgraph/
+```
+
+---
+
+*This setup guide ensures a smooth development and deployment experience for the Bulgarian Legal AI Assistant. Follow these steps carefully for optimal system performance and reliability.*

@@ -1,0 +1,612 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Style and Theme - Bulgarian Legal AI Assistant
+
+## Overview
+The Bulgarian Legal AI Assistant features a modern, ChatGPT-inspired design system optimized for legal professionals and general users. This document outlines the comprehensive style guide, theme specifications, and UI component standards.
+
+## Design Philosophy
+
+### 1. Core Design Principles
+- **Professional Accessibility**: Clean, trustworthy interface suitable for legal professionals
+- **Modern Minimalism**: ChatGPT-inspired clean aesthetic with focused functionality
+- **Bulgarian Legal Context**: Culturally appropriate design for Bulgarian users
+- **Responsive Excellence**: Seamless experience across all device types
+- **Cognitive Load Reduction**: Simplified interface reducing user mental overhead
+
+### 2. Visual Hierarchy
+```
+Primary Focus: Chat Interface (Legal Q&A)
+    ↓
+Secondary: Search Controls (Methodology, Filters)
+    ↓
+Tertiary: Status Indicators (Connection, Processing)
+    ↓
+Supporting: Branding Elements (Logo, Footer)
+```
+
+## Color Palette
+
+### 1. Primary Colors
+```css
+/* Primary Brand Colors */
+--primary-green: #10a37f;        /* ChatGPT-inspired accent */
+--primary-green-hover: #0f8b6c;  /* Hover state */
+--primary-green-light: rgba(16, 163, 127, 0.1); /* Light variant */
+
+/* Neutral Grays */
+--gray-50: #f9fafb;              /* Lightest background */
+--gray-100: #f3f4f6;             /* Light backgrounds */
+--gray-200: #e5e7eb;             /* Borders */
+--gray-300: #d1d5db;             /* Input borders */
+--gray-400: #9ca3af;             /* Disabled text */
+--gray-500: #6b7280;             /* Secondary text */
+--gray-700: #374151;             /* Primary text */
+--gray-900: #1f2937;             /* Headings */
+
+/* Background Colors */
+--bg-primary: #ffffff;           /* Main background */
+--bg-secondary: #f7f7f8;         /* Page background */
+--bg-tertiary: #f9fafb;          /* Panel backgrounds */
+```
+
+### 2. Semantic Colors
+```css
+/* Status Colors */
+--success-color: #10b981;        /* Success states */
+--warning-color: #f59e0b;        /* Warning states */
+--error-color: #ef4444;          /* Error states */
+--info-color: #3b82f6;           /* Information states */
+
+/* Legal Result Colors */
+--legal-result-bg: #f8f9fa;      /* Legal document background */
+--legal-result-border: #28a745;  /* Legal document accent */
+--legal-result-text: #374151;    /* Legal document text */
+
+/* Message Colors */
+--user-message-bg: #f0f0f0;      /* User message background */
+--assistant-message-bg: transparent; /* Assistant message background */
+--message-text: #374151;         /* Message text color */
+```
+
+### 3. Color Usage Guidelines
+
+#### **Primary Green (#10a37f)**
+- **Usage**: Send buttons, settings active states, focus indicators
+- **Accessibility**: WCAG AA compliant with white text
+- **Psychology**: Trust, reliability, legal authority
+
+#### **Gray Scale System**
+- **Gray-50 to Gray-200**: Backgrounds and subtle borders
+- **Gray-300 to Gray-500**: Interactive elements and secondary content
+- **Gray-700 to Gray-900**: Primary text and important content
+
+## Typography
+
+### 1. Font System
+```css
+/* Primary Font Stack */
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+/* Font Weights */
+--font-light: 300;
+--font-regular: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+
+/* Font Sizes */
+--text-xs: 11px;      /* Fine print */
+--text-sm: 13px;      /* Labels */
+--text-base: 14px;    /* Body text */
+--text-md: 16px;      /* Input text */
+--text-lg: 18px;      /* Headings */
+--text-xl: 20px;      /* Large headings */
+```
+
+### 2. Typography Scale
+```css
+/* Heading Styles */
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+/* Body Text */
+.message-content {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+/* Labels and Controls */
+.control-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+}
+
+/* Legal References */
+.legal-reference {
+    font-weight: 600;
+    color: var(--primary-green);
+}
+```
+
+### 3. Bulgarian Text Considerations
+- **Cyrillic Support**: Full Bulgarian Cyrillic character support
+- **Line Height**: Optimized for Bulgarian text readability (1.6)
+- **Letter Spacing**: Default spacing optimized for Cyrillic characters
+
+## Layout System
+
+### 1. Grid System
+```css
+/* Container Widths */
+--container-mobile: 100vw;       /* Mobile full width */
+--container-tablet: 100%;        /* Tablet full width */
+--container-desktop: 768px;      /* Desktop centered */
+--container-max: 1200px;         /* Maximum width */
+
+/* Spacing Scale */
+--space-xs: 4px;
+--space-sm: 8px;
+--space-md: 12px;
+--space-lg: 16px;
+--space-xl: 24px;
+--space-2xl: 32px;
+```
+
+### 2. Layout Components
+
+#### **Chat Container**
+```css
+.chat-container {
+    width: 100%;
+    max-width: var(--container-desktop);
+    height: 100vh;
+    background: var(--bg-primary);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+```
+
+#### **Content Areas**
+```css
+.chat-messages {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-xl);
+    width: 100%;
+}
+
+.chat-input-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-lg) var(--space-xl) var(--space-xl);
+    width: 100%;
+}
+```
+
+### 3. Responsive Breakpoints
+```css
+/* Mobile First Approach */
+@media (max-width: 768px) {
+    .chat-container {
+        height: 100vh;
+        width: 100vw;
+        max-width: none;
+    }
+    
+    .chat-messages, .chat-input-container {
+        padding: var(--space-lg);
+        max-width: none;
+    }
+}
+```
+
+## Component Styles
+
+### 1. Message Components
+
+#### **Message Container**
+```css
+.message {
+    display: flex;
+    gap: var(--space-lg);
+    width: 100%;
+    animation: slideIn 0.3s ease-out;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.message.assistant {
+    justify-content: flex-start;
+}
+```
+
+#### **Message Avatars**
+```css
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.message.user .message-avatar {
+    background: var(--primary-green);
+    color: white;
+}
+
+.message.assistant .message-avatar {
+    background: #19c37d;
+    color: white;
+}
+```
+
+#### **Message Content**
+```css
+.message-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+.message.user .message-content {
+    background: var(--user-message-bg);
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 70%;
+}
+```
+
+### 2. Input Components
+
+#### **Chat Input**
+```css
+.chat-input {
+    flex: 1;
+    min-height: 52px;
+    max-height: 200px;
+    padding: 14px 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    resize: none;
+    outline: none;
+    transition: all 0.2s ease;
+    background: var(--bg-primary);
+}
+
+.chat-input:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px var(--primary-green-light);
+}
+```
+
+#### **Buttons**
+```css
+.send-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary-green);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.send-button:hover:not(:disabled) {
+    background: var(--primary-green-hover);
+}
+
+.settings-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.settings-button:hover {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.settings-button.active {
+    background: var(--primary-green);
+    color: white;
+}
+```
+
+### 3. Form Controls
+
+#### **Settings Panel**
+```css
+.settings-panel {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    display: none;
+}
+
+.settings-panel.show {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-lg);
+}
+
+.control-select, .control-input {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: var(--bg-primary);
+    transition: border-color 0.2s ease;
+}
+
+.control-select:focus, .control-input:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px var(--primary-green-light);
+}
+```
+
+## Animation System
+
+### 1. Micro-Interactions
+```css
+/* Slide In Animation */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Settings Panel Slide Down */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+```
+
+### 2. Transition Standards
+```css
+/* Standard Transitions */
+--transition-fast: 0.2s ease;
+--transition-normal: 0.3s ease-out;
+--transition-slow: 0.5s ease-in-out;
+
+/* Apply to Interactive Elements */
+.interactive-element {
+    transition: all var(--transition-fast);
+}
+```
+
+## Legal Result Styling
+
+### 1. Legal Document Cards
+```css
+.legal-result {
+    background: var(--legal-result-bg);
+    border-left: 4px solid var(--legal-result-border);
+    padding: var(--space-lg);
+    margin: 12px 0;
+    border-radius: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.legal-result h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.legal-result p {
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+    color: var(--gray-700);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+```
+
+### 2. Relevancy Indicators
+```css
+.relevancy-score {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.relevancy-high { 
+    background: #d4edda; 
+    color: #155724; 
+}
+
+.relevancy-medium { 
+    background: #fff3cd; 
+    color: #856404; 
+}
+
+.relevancy-low { 
+    background: #f8d7da; 
+    color: #721c24; 
+}
+```
+
+## Accessibility Standards
+
+### 1. Color Contrast
+- **AA Compliance**: All text meets WCAG 2.1 AA standards
+- **Primary Green**: 4.5:1 contrast ratio with white text
+- **Gray Text**: Minimum 4.5:1 contrast ratio with backgrounds
+
+### 2. Focus Management
+```css
+/* Focus Indicators */
+.focusable:focus {
+    outline: 2px solid var(--primary-green);
+    outline-offset: 2px;
+}
+
+/* Focus Within */
+.input-wrapper:focus-within {
+    box-shadow: 0 0 0 3px var(--primary-green-light);
+}
+```
+
+### 3. Screen Reader Support
+- **ARIA Labels**: All interactive elements have appropriate ARIA labels
+- **Semantic HTML**: Proper heading hierarchy and semantic structure
+- **Alt Text**: All icons and images include descriptive alt text
+
+## Mobile Optimization
+
+### 1. Touch Targets
+```css
+/* Minimum Touch Target Size */
+.touch-target {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Mobile Button Sizing */
+@media (max-width: 768px) {
+    .send-button, .settings-button {
+        width: 44px;
+        height: 44px;
+    }
+}
+```
+
+### 2. Mobile Layout Adjustments
+```css
+@media (max-width: 768px) {
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .message.user .message-content {
+        max-width: 85%;
+    }
+    
+    .header-title {
+        font-size: 16px;
+    }
+}
+```
+
+## Error and Status Styling
+
+### 1. Error States
+```css
+.error-message {
+    color: var(--error-color);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 8px 0;
+}
+
+.connection-status.disconnected {
+    background: #fef2f2;
+    color: var(--error-color);
+    border: 1px solid #fecaca;
+}
+```
+
+### 2. Loading States
+```css
+.typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 10px 0;
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gray-400);
+    animation: typing 1.4s infinite ease-in-out;
+}
+```
+
+## Future Theme Enhancements
+
+### 1. Dark Mode Support
+- **Color Palette**: Dark mode color variants
+- **Theme Toggle**: User preference system
+- **System Preference**: Automatic theme detection
+
+### 2. Bulgarian Government Theme
+- **Official Colors**: Bulgarian government brand colors
+- **Institutional Styling**: Formal government interface styling
+- **Accessibility**: Enhanced accessibility for government use
+
+---
+
+*This style guide ensures consistent, professional, and accessible design across the Bulgarian Legal AI Assistant platform. Regular updates maintain alignment with modern design standards and user feedback.*

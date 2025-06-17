@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+you are a profesional Softuare developer the best in the worlds and you have to use all the rules files to create the best Legal Chatbot like app ever created powered my ai you have to always read the [project.mdc](mdc:cursor/rules/project.mdc) to understand the whole flow and move to the next one based on the steps for implementation in the [steps.md](mdc:steps.md) you have to make the next 52-3max steps that arent done and are the next 2 to 3 max  not checked to be done and also mind the design: [ui_and_ux.mdc](mdc:cursor/rules/ui_and_ux.mdc) and [style_and_theme.mdc](mdc:cursor/rules/style_and_theme.mdc) so it is all first mind the [initial_setup.mdc](mdc:cursor/rules/initial_setup.mdc) adn make sure to follow and  implement and follow in  the [ai_agents_and_ai_flows.mdc](mdc:cursor/rules/ai_agents_and_ai_flows.mdc) and [searching_methods.mdc](mdc:searching_methods.mdc) .
+ Always dont over complicate it do it as simple as possible but as result as much performance as showing as possible please thank you a lot

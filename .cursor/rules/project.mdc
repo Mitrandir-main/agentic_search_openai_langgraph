@@ -1,0 +1,290 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Overview - Bulgarian Legal AI Assistant
+
+## Project Summary
+
+### 1. Mission Statement
+The Bulgarian Legal AI Assistant is an advanced, AI-powered platform designed to provide accurate, comprehensive, and accessible legal information to Bulgarian citizens, legal professionals, and organizations. The system leverages cutting-edge artificial intelligence, multi-source search capabilities, and sophisticated content analysis to deliver reliable legal guidance in the Bulgarian legal context.
+
+### 2. Project Vision
+To democratize access to Bulgarian legal information by creating an intelligent, user-friendly platform that bridges the gap between complex legal documentation and practical legal understanding for all Bulgarian citizens.
+
+## Technical Architecture
+
+### 1. System Overview
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Bulgarian Legal AI Assistant                  │
+├─────────────────────────────────────────────────────────────────┤
+│  Frontend Layer: ChatGPT-inspired Web Interface                │
+├─────────────────────────────────────────────────────────────────┤
+│  API Layer: FastAPI + WebSocket Real-time Communication        │
+├─────────────────────────────────────────────────────────────────┤
+│  AI Orchestration: LangGraph Multi-Agent Workflows             │
+├─────────────────────────────────────────────────────────────────┤
+│  Search Engine: Multi-Source Legal Document Retrieval          │
+├─────────────────────────────────────────────────────────────────┤
+│  Data Sources: Ciela.net, APIs.bg, Lakorda.com, VKS.bg        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 2. Core Technologies
+- **Backend Framework**: FastAPI (Python 3.11+)
+- **AI Orchestration**: LangGraph + LangChain
+- **Language Models**: OpenAI GPT-4 Turbo
+- **Search Technology**: Google Custom Search Engine API
+- **Frontend**: Modern HTML5/CSS3/JavaScript (ChatGPT-inspired UI)
+- **Real-time Communication**: WebSocket connections
+- **Content Processing**: BeautifulSoup4, async HTTP clients
+- **Data Validation**: Pydantic v2
+
+## Key Features
+
+### 1. Intelligent Legal Search
+- **Multi-Source Integration**: Searches across 4+ Bulgarian legal databases
+- **AI-Powered Query Expansion**: Intelligent query enhancement and legal term recognition
+- **Contextual Understanding**: Bulgarian legal terminology and procedure awareness
+- **Relevancy Scoring**: Advanced multi-factor relevancy assessment
+- **Real-time Processing**: Live search progress updates via WebSocket
+
+### 2. Advanced AI Analysis
+- **Multi-Agent Architecture**: Specialized AI agents for different legal tasks
+- **Content Synthesis**: Comprehensive analysis and summarization of legal documents
+- **Gap Analysis**: Identification of missing information in search results
+- **Legal Reasoning**: AI-powered legal context understanding and explanation
+- **Bulgarian Language Processing**: Specialized handling of Bulgarian legal text
+
+### 3. Professional User Experience
+- **ChatGPT-Style Interface**: Modern, clean, and intuitive chat interface
+- **Responsive Design**: Seamless experience across desktop and mobile devices
+- **Real-time Feedback**: Live typing indicators and search progress updates
+- **Accessibility Compliance**: WCAG 2.1 AA compliant design
+- **Professional Theming**: Trustworthy design suitable for legal professionals
+
+### 4. Legal Data Sources
+- **Ciela.net**: Premium legal database with comprehensive Bulgarian legal content
+- **APIs.bg**: Official government legislation and regulatory documents
+- **Lakorda.com**: Legal practice resources and professional insights
+- **VKS.bg**: Supreme Court of Cassation decisions and precedents (New)
+
+## Project Structure
+
+### 1. Application Architecture
+```
+SearchAgentDido/
+├── agentic_search_openai_langgraph/    # Core application
+│   ├── main.py                         # FastAPI application entry
+│   ├── enhanced_legal_tools.py         # Enhanced search orchestration
+│   ├── tools.py                       # Search engine implementations
+│   ├── relevancy_scoring.py           # AI-powered relevancy assessment
+│   ├── vks_integration.py             # VKS court decisions integration
+│   └── templates/
+│       └── index.html                 # Modern chat interface
+├── static/                            # Static assets
+├── logs/                             # Application logging
+├── cache/                            # Search result caching
+├── tests/                            # Comprehensive test suite
+└── docs/                             # Project documentation
+```
+
+### 2. Documentation Structure
+- `ai_agents_and_ai_flows.mdc` - AI architecture and agent workflows
+- `searching_methods.mdc` - Search algorithms and methodologies
+- `style_and_theme.mdc` - UI/UX design system and guidelines
+- `initial_setup.mdc` - Installation and configuration guide
+- `project.mdc` - Project overview and architecture (this file)
+- `ui_and_ux.mdc` - User interface and experience specifications
+- `vks_bg_integration.mdc` - Supreme Court integration documentation
+
+## Development Methodology
+
+### 1. Agile Development Process
+- **Sprint-Based Development**: 2-week sprint cycles
+- **Continuous Integration**: Automated testing and deployment
+- **Code Quality**: Black formatting, Flake8 linting, MyPy type checking
+- **Documentation-Driven**: Comprehensive documentation for all features
+- **User-Centered Design**: Regular user feedback integration
+
+### 2. Quality Assurance
+- **Automated Testing**: Comprehensive test suite with pytest
+- **Code Coverage**: Minimum 80% test coverage requirement
+- **Performance Testing**: Load testing and optimization
+- **Security Auditing**: Regular security assessments
+- **Legal Accuracy**: Legal professional review of AI responses
+
+### 3. Technology Standards
+- **Python 3.11+**: Modern Python with type hints and async support
+- **FastAPI**: High-performance async web framework
+- **OpenAI GPT-4**: State-of-the-art language model capabilities
+- **Responsive Design**: Mobile-first, accessibility-compliant interface
+- **RESTful APIs**: Clean, well-documented API design
+
+## Project Goals
+
+### 1. Primary Objectives
+- **Accessibility**: Make Bulgarian legal information accessible to all citizens
+- **Accuracy**: Provide reliable, up-to-date legal information
+- **Usability**: Create an intuitive, professional user experience
+- **Scalability**: Build a system capable of handling high user loads
+- **Maintainability**: Ensure long-term system sustainability
+
+### 2. Success Metrics
+- **User Engagement**: Average session duration and query frequency
+- **Search Quality**: Relevancy scores and user satisfaction ratings
+- **System Performance**: Response times and uptime statistics
+- **Legal Accuracy**: Professional validation of AI responses
+- **User Growth**: Monthly active users and retention rates
+
+## Target Audience
+
+### 1. Primary Users
+- **Legal Professionals**: Lawyers, judges, legal consultants
+- **Government Officials**: Civil servants, policy makers, administrators
+- **Citizens**: Individuals seeking legal information and guidance
+- **Students**: Law students and legal researchers
+- **Businesses**: Companies requiring legal compliance information
+
+### 2. Use Cases
+- **Legal Research**: Finding relevant laws, regulations, and precedents
+- **Compliance Checking**: Verifying regulatory requirements
+- **Legal Education**: Learning about Bulgarian legal procedures
+- **Case Preparation**: Research for legal cases and arguments
+- **Public Information**: General legal questions from citizens
+
+## Technical Specifications
+
+### 1. Performance Requirements
+- **Response Time**: <3 seconds for standard searches
+- **Concurrent Users**: Support for 100+ simultaneous users
+- **Uptime**: 99.9% system availability
+- **Search Coverage**: 95%+ relevant result retrieval
+- **Mobile Performance**: <2 seconds on mobile devices
+
+### 2. Security Requirements
+- **Data Protection**: GDPR compliant data handling
+- **API Security**: Rate limiting and authentication
+- **Content Security**: XSS and injection protection
+- **Privacy**: No user data retention beyond session
+- **Secure Communication**: HTTPS/WSS encryption
+
+### 3. Scalability Requirements
+- **Horizontal Scaling**: Docker containerization support
+- **Load Balancing**: Multi-instance deployment capability
+- **Cache Optimization**: Intelligent result caching
+- **Database Scaling**: Support for read replicas
+- **CDN Integration**: Static asset delivery optimization
+
+## Implementation Phases
+
+### 1. Phase 1: Core Foundation (Completed)
+- ✅ Basic search functionality across legal databases
+- ✅ AI-powered query processing and expansion
+- ✅ ChatGPT-style user interface
+- ✅ Multi-source content extraction
+- ✅ Relevancy scoring system
+
+### 2. Phase 2: Enhanced Features (In Progress)
+- ✅ Advanced AI analysis and synthesis
+- ✅ Real-time WebSocket communication
+- ✅ Responsive mobile optimization
+- 🔄 VKS Supreme Court integration
+- 🔄 Performance optimization and caching
+
+### 3. Phase 3: Production Readiness (Planned)
+- 🔄 Load testing and performance optimization
+- 📋 Security audit and penetration testing
+- 📋 Legal professional validation
+- 📋 Production deployment and monitoring
+- 📋 User training and documentation
+
+### 4. Phase 4: Advanced Features (Future)
+- 📋 Voice interface and speech recognition
+- 📋 Document upload and analysis
+- 📋 Legal document generation
+- 📋 Multi-language support (English/Bulgarian)
+- 📋 Mobile application development
+
+## Risk Management
+
+### 1. Technical Risks
+- **API Limitations**: OpenAI rate limits and availability
+- **Search Quality**: Maintaining high relevancy across all sources
+- **Performance**: Handling high concurrent user loads
+- **Data Accuracy**: Ensuring legal information accuracy
+- **Integration Complexity**: Managing multiple data source integrations
+
+### 2. Mitigation Strategies
+- **Fallback Systems**: Alternative AI providers and local processing
+- **Quality Assurance**: Automated testing and manual validation
+- **Performance Monitoring**: Real-time system monitoring and alerting
+- **Legal Review**: Professional legal validation processes
+- **Modular Architecture**: Isolated components for easier maintenance
+
+## Compliance and Legal Considerations
+
+### 1. Data Protection
+- **GDPR Compliance**: European data protection regulation adherence
+- **Privacy Policy**: Clear user data handling policies
+- **Data Minimization**: Collect only necessary user information
+- **Right to Deletion**: User data removal capabilities
+- **Consent Management**: Clear user consent mechanisms
+
+### 2. Legal Disclaimer
+- **Professional Advice**: Clear limitations on legal advice provision
+- **Information Accuracy**: Disclaimers about information currency
+- **User Responsibility**: Clear user responsibility statements
+- **Professional Consultation**: Recommendations for complex legal matters
+- **Jurisdiction Limitations**: Clear scope of Bulgarian law focus
+
+## Future Roadmap
+
+### 1. Short-term Goals (3-6 months)
+- Complete VKS Supreme Court integration
+- Implement advanced caching and performance optimization
+- Deploy production-ready monitoring and alerting
+- Conduct comprehensive security audit
+- Launch beta testing with legal professionals
+
+### 2. Medium-term Goals (6-12 months)
+- Develop mobile applications (iOS/Android)
+- Implement voice interface capabilities
+- Add document upload and analysis features
+- Expand to cover European legal framework
+- Establish partnerships with legal institutions
+
+### 3. Long-term Vision (1-2 years)
+- AI-powered legal document generation
+- Predictive legal analytics
+- Integration with court systems
+- Multi-jurisdictional legal support
+- Advanced legal reasoning capabilities
+
+## Project Team and Roles
+
+### 1. Core Team Structure
+- **Technical Lead**: System architecture and AI implementation
+- **Frontend Developer**: User interface and experience design
+- **Backend Developer**: API development and integration
+- **Legal Consultant**: Legal accuracy and compliance review
+- **QA Engineer**: Testing and quality assurance
+
+### 2. External Partnerships
+- **Legal Institutions**: Bulgarian Bar Association, law schools
+- **Technology Partners**: OpenAI, Google Cloud, hosting providers
+- **Data Providers**: Legal database providers and publishers
+- **Academic Partners**: Legal research institutions
+- **Government Relations**: Ministry of Justice, court system
+
+## Conclusion
+
+The Bulgarian Legal AI Assistant represents a significant advancement in legal technology, combining cutting-edge AI capabilities with deep understanding of Bulgarian legal requirements. The project aims to democratize access to legal information while maintaining the highest standards of accuracy, security, and user experience.
+
+Through its innovative multi-agent architecture, comprehensive search capabilities, and professional-grade interface, the system addresses the critical need for accessible, reliable legal information in Bulgaria. The project's modular design and robust technical foundation ensure scalability and maintainability for long-term success.
+
+---
+
+*This project overview provides a comprehensive understanding of the Bulgarian Legal AI Assistant's scope, architecture, and strategic direction. Regular updates ensure alignment with evolving requirements and technological capabilities.*

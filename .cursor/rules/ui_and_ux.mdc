@@ -1,0 +1,373 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# UI and UX - Bulgarian Legal AI Assistant
+
+## Overview
+This document outlines the user interface and user experience design principles, components, and specifications for the Bulgarian Legal AI Assistant. The design follows modern web standards with a ChatGPT-inspired aesthetic optimized for legal professionals and general users.
+
+## Design Philosophy
+
+### 1. Core UX Principles
+- **Clarity Over Complexity**: Simple, clean interface that doesn't overwhelm users
+- **Professional Trust**: Design that inspires confidence in legal accuracy
+- **Accessibility First**: Inclusive design for all users and abilities
+- **Mobile Responsive**: Seamless experience across all device types
+- **Conversational Interface**: Natural, chat-based interaction paradigm
+
+### 2. User-Centered Design
+- **Legal Professional Focus**: Interface optimized for legal research workflows
+- **Citizen Accessibility**: Simple enough for non-legal users
+- **Cultural Sensitivity**: Design appropriate for Bulgarian legal context
+- **Performance Oriented**: Fast, responsive interactions
+- **Error Prevention**: Clear guidance to prevent user mistakes
+
+## User Experience Architecture
+
+### 1. User Journey Mapping
+```
+User Entry → Query Input → Search Processing → Results Display → Follow-up Questions
+    ↓           ↓             ↓                 ↓                ↓
+Welcome     Settings      Progress           Analysis         Refinement
+Message     Config        Feedback           Presentation     Assistance
+```
+
+### 2. Information Architecture
+```
+Bulgarian Legal AI Assistant
+├── Chat Interface (Primary)
+│   ├── Message History
+│   ├── Input Area
+│   └── Settings Panel
+├── Search Controls (Secondary)
+│   ├── Methodology Selection
+│   ├── Result Limits
+│   └── Relevancy Thresholds
+└── System Status (Tertiary)
+    ├── Connection Status
+    ├── Processing Indicators
+    └── Error Messages
+```
+
+## Interface Components
+
+### 1. Chat Interface Design
+
+#### **Message Components**
+```css
+/* User Messages */
+.message.user {
+    justify-content: flex-end;          /* Right alignment */
+    background: #f0f0f0;                /* Light gray bubble */
+    max-width: 70%;                     /* Constrained width */
+    border-radius: 18px;                /* Rounded corners */
+}
+
+/* Assistant Messages */
+.message.assistant {
+    justify-content: flex-start;        /* Left alignment */
+    background: transparent;            /* No background */
+    full-width: 100%;                   /* Full width content */
+}
+```
+
+#### **Avatar System**
+- **User Avatar**: Green square with user icon (#10a37f)
+- **Assistant Avatar**: Slightly different green with robot icon (#19c37d)
+- **Consistent Sizing**: 32x32px with 4px border radius
+- **Professional Appearance**: Clean, minimal iconography
+
+#### **Message Formatting**
+- **Legal References**: Highlighted in primary green color
+- **Article Numbers**: Bold formatting (чл. 123, ал. 2)
+- **Legal Terms**: Semantic highlighting for Bulgarian legal terminology
+- **Links**: Styled as professional, non-intrusive links
+- **Word Wrapping**: Intelligent break-word handling for long legal terms
+
+### 2. Input System Design
+
+#### **Chat Input Field**
+```css
+.chat-input {
+    min-height: 52px;                   /* Generous input area */
+    max-height: 200px;                  /* Expandable for long queries */
+    border-radius: 12px;                /* Modern rounded design */
+    border: 1px solid #d1d5db;          /* Subtle border */
+    padding: 14px 16px;                 /* Comfortable padding */
+}
+
+.chat-input:focus {
+    border-color: #10a37f;              /* Green focus indicator */
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1); /* Subtle glow */
+}
+```
+
+#### **Button Design**
+- **Send Button**: Primary green (#10a37f) with paper plane icon
+- **Settings Button**: Gray (#f3f4f6) with gear icon, green when active
+- **Size**: 40x40px for optimal touch targets
+- **Accessibility**: WCAG compliant color contrast and focus indicators
+
+### 3. Settings Panel Design
+
+#### **Collapsible Interface**
+```css
+.settings-panel {
+    background: #f9fafb;                /* Light background */
+    border: 1px solid #e5e7eb;          /* Subtle border */
+    border-radius: 12px;                /* Consistent radius */
+    padding: 16px;                      /* Comfortable spacing */
+    animation: slideDown 0.2s ease-out; /* Smooth reveal */
+}
+```
+
+#### **Form Controls**
+- **Grid Layout**: 3-column desktop, 1-column mobile
+- **Label System**: Clear, descriptive labels in Bulgarian
+- **Input Styling**: Consistent with main input field design
+- **Focus Management**: Logical tab order and focus indicators
+
+## Responsive Design
+
+### 1. Breakpoint Strategy
+```css
+/* Mobile First Approach */
+@media (max-width: 768px) {
+    /* Full-screen mobile experience */
+    .chat-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+}
+
+@media (min-width: 769px) {
+    /* Centered desktop experience */
+    .chat-container {
+        max-width: 768px;
+        margin: 0 auto;
+    }
+}
+```
+
+### 2. Mobile Optimization
+- **Touch Targets**: Minimum 44px for all interactive elements
+- **Gesture Support**: Swipe gestures for message navigation
+- **Keyboard Optimization**: Proper keyboard type for input fields
+- **Viewport Handling**: Proper mobile viewport configuration
+- **Performance**: Optimized for mobile network conditions
+
+### 3. Desktop Enhancement
+- **Centered Layout**: 768px max width with auto margins
+- **Keyboard Shortcuts**: Enter to send, Shift+Enter for new line
+- **Hover States**: Subtle hover effects for interactive elements
+- **Focus Management**: Clear focus indicators for keyboard navigation
+
+## Accessibility Standards
+
+### 1. WCAG 2.1 AA Compliance
+- **Color Contrast**: Minimum 4.5:1 ratio for all text
+- **Focus Indicators**: Visible focus states for all interactive elements
+- **Keyboard Navigation**: Full keyboard accessibility
+- **Screen Reader Support**: Proper ARIA labels and semantic HTML
+- **Alternative Text**: Descriptive alt text for all images and icons
+
+### 2. Inclusive Design Features
+```html
+<!-- Semantic HTML Structure -->
+<main role="main" aria-label="Legal AI Chat Interface">
+    <section role="log" aria-live="polite" aria-label="Chat Messages">
+        <!-- Message history -->
+    </section>
+    <form role="search" aria-label="Legal Query Input">
+        <!-- Input controls -->
+    </form>
+</main>
+```
+
+### 3. Language Accessibility
+- **Bulgarian Language Support**: Full Cyrillic character support
+- **RTL Support**: Ready for potential Arabic/Hebrew legal texts
+- **Font Accessibility**: High-contrast, readable fonts
+- **Text Scaling**: Support for 200% zoom without horizontal scrolling
+
+## Visual Design System
+
+### 1. Color Psychology
+- **Primary Green (#10a37f)**: Trust, reliability, legal authority
+- **Gray Palette**: Professional, clean, non-distracting
+- **White Backgrounds**: Clarity, focus, document-like feel
+- **Subtle Accents**: Support rather than dominate the interface
+
+### 2. Typography Hierarchy
+```css
+/* Heading Levels */
+h1 { font-size: 18px; font-weight: 600; }  /* Main title */
+h2 { font-size: 16px; font-weight: 600; }  /* Section headers */
+h3 { font-size: 14px; font-weight: 600; }  /* Subsection headers */
+
+/* Body Text */
+body { font-size: 16px; line-height: 1.6; } /* Optimal readability */
+
+/* Legal Content */
+.legal-content { font-size: 14px; line-height: 1.5; } /* Dense legal text */
+```
+
+### 3. Spacing System
+- **4px Base Unit**: All spacing multiples of 4px
+- **Consistent Margins**: 16px standard, 24px for major sections
+- **Visual Rhythm**: Consistent vertical spacing throughout
+- **White Space**: Generous use of white space for clarity
+
+## Interaction Design
+
+### 1. Micro-Interactions
+```css
+/* Smooth Transitions */
+.interactive-element {
+    transition: all 0.2s ease;
+}
+
+/* Button Hover Effects */
+.button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Input Focus Effects */
+.input:focus {
+    transform: scale(1.02);
+    transition: transform 0.1s ease;
+}
+```
+
+### 2. Loading States
+- **Typing Indicators**: Animated dots for AI processing
+- **Progress Feedback**: Search progress with descriptive text
+- **Skeleton Loading**: Placeholder content during load times
+- **Error Recovery**: Clear error messages with recovery options
+
+### 3. Animation Principles
+- **Purposeful Motion**: Animations guide user attention
+- **Performance**: 60fps animations using CSS transforms
+- **Accessibility**: Respect `prefers-reduced-motion` settings
+- **Timing**: Natural, comfortable animation durations (200-300ms)
+
+## Content Strategy
+
+### 1. Microcopy and Labels
+```javascript
+// Bulgarian Interface Text
+const UI_TEXT = {
+    placeholders: {
+        input: "Задайте въпрос за българското законодателство...",
+        search: "Търсене..."
+    },
+    buttons: {
+        send: "Изпрати",
+        settings: "Настройки"
+    },
+    labels: {
+        methodology: "Методология",
+        maxResults: "Макс. резултати",
+        minRelevancy: "Мин. релевантност"
+    }
+};
+```
+
+### 2. Error Messaging
+- **Clear Language**: Simple Bulgarian, avoiding technical jargon
+- **Actionable Guidance**: Clear steps for error recovery
+- **Contextual Help**: Error messages relevant to user actions
+- **Professional Tone**: Serious but not intimidating
+
+### 3. Success Feedback
+- **Progress Indicators**: Clear feedback during search operations
+- **Result Summaries**: Metadata about search results and timing
+- **Confidence Indicators**: Relevancy scores and source information
+
+## Performance UX
+
+### 1. Perceived Performance
+- **Immediate Feedback**: Instant response to user inputs
+- **Progressive Loading**: Show partial results as they arrive
+- **Preemptive Actions**: Prepare next likely user actions
+- **Caching Indicators**: Subtle indicators for cached vs fresh content
+
+### 2. Load Time Optimization
+- **Critical CSS**: Inline critical styling for faster rendering
+- **Image Optimization**: Optimized icons and graphics
+- **Font Loading**: Efficient web font loading strategies
+- **JavaScript Splitting**: Load only necessary code initially
+
+### 3. Offline Considerations
+- **Connection Status**: Clear indicators of connection state
+- **Graceful Degradation**: Basic functionality when offline
+- **Error Boundaries**: Prevent entire application crashes
+- **Retry Mechanisms**: Automatic retry for failed requests
+
+## Legal Professional UX
+
+### 1. Professional Workflow Integration
+- **Citation Formatting**: Proper Bulgarian legal citation format
+- **Source Attribution**: Clear attribution for all legal sources
+- **Export Options**: Copy/paste optimized formatting
+- **Search History**: Access to previous searches and results
+
+### 2. Advanced Features
+- **Filter Controls**: Advanced filtering for legal document types
+- **Relevancy Tuning**: Professional control over search parameters
+- **Source Selection**: Ability to select specific legal databases
+- **Result Analysis**: Detailed analysis of search result quality
+
+### 3. Trust Indicators
+- **Source Transparency**: Clear indication of information sources
+- **Accuracy Disclaimers**: Professional disclaimers about AI limitations
+- **Update Timestamps**: Information about content freshness
+- **Professional Validation**: Indicators of human legal review
+
+## User Testing and Feedback
+
+### 1. Usability Testing Protocol
+- **Task-Based Testing**: Real legal research scenarios
+- **Think-Aloud Protocol**: Understanding user mental models
+- **A/B Testing**: Comparing design alternatives
+- **Accessibility Testing**: Testing with assistive technologies
+
+### 2. Feedback Mechanisms
+- **Implicit Feedback**: User behavior analysis
+- **Explicit Feedback**: Optional feedback forms
+- **Professional Review**: Legal expert evaluation
+- **Iterative Improvement**: Regular design updates based on feedback
+
+### 3. Success Metrics
+- **Task Completion Rate**: Percentage of successful legal queries
+- **Time to Resolution**: Average time to find relevant information
+- **User Satisfaction**: Qualitative feedback scores
+- **Error Recovery**: Success rate of error resolution
+
+## Future UX Enhancements
+
+### 1. Advanced Interaction Modes
+- **Voice Interface**: Speech-to-text for legal queries
+- **Document Upload**: Drag-and-drop document analysis
+- **Visual Search**: Search using legal document images
+- **Collaborative Features**: Sharing and discussion capabilities
+
+### 2. Personalization
+- **User Preferences**: Customizable interface preferences
+- **Search History**: Intelligent search suggestions
+- **Professional Profiles**: Role-based interface customization
+- **Learning Adaptation**: Interface adaptation to user patterns
+
+### 3. Integration Capabilities
+- **Legal Software Integration**: API for legal practice management
+- **Government Systems**: Integration with official legal systems
+- **Educational Platforms**: Integration with legal education tools
+- **Mobile Applications**: Native mobile app development
+
+---
+
+*This UI/UX specification ensures a professional, accessible, and efficient user experience for the Bulgarian Legal AI Assistant. Regular updates maintain alignment with user needs and modern design standards.*

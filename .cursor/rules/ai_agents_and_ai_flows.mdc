@@ -1,0 +1,191 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# AI Agents and AI Flows - Bulgarian Legal AI Assistant
+
+## Overview
+The Bulgarian Legal AI Assistant leverages multiple AI agents and sophisticated flow orchestration to provide accurate legal information retrieval and analysis. This document outlines the architecture, agents, and data flows within the system.
+
+## Core AI Architecture
+
+### 1. Multi-Agent System Design
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Query Agent   │───▶│  Search Agent    │───▶│  Analysis Agent │
+│   (Query Proc.) │    │  (Legal Search)  │    │  (Content Eval.)│
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Context Agent   │    │ Relevancy Agent  │    │ Response Agent  │
+│ (Context Build) │    │ (Scoring)        │    │ (Final Format)  │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+### 2. Primary AI Agents
+
+#### **Query Processing Agent**
+- **Purpose**: Intelligent query expansion and Bulgarian legal term normalization
+- **Technologies**: OpenAI GPT-4, LangGraph orchestration
+- **Key Functions**:
+  - Bulgarian legal terminology understanding
+  - Query expansion with synonyms and related terms
+  - Context extraction from user input
+  - Intent classification (legal advice, document search, procedure inquiry)
+
+#### **Enhanced Search Agent**
+- **Purpose**: Multi-source legal document retrieval
+- **Search Methodology**: 3-phase enhanced search process
+- **Data Sources**:
+  - `ciela.net` - Comprehensive legal database
+  - `apis.bg` - Government legislation portal
+  - `lakorda.com` - Legal practice resources
+- **Features**:
+  - Domain-specific search optimization
+  - Parallel search execution
+  - Result deduplication and ranking
+
+#### **Content Extraction Agent**
+- **Purpose**: Deep content processing from legal sources
+- **Capabilities**:
+  - HTML content parsing and cleaning
+  - Legal document structure recognition
+  - Metadata extraction (article numbers, law references)
+  - Content summarization for large documents
+
+#### **Relevancy Scoring Agent**
+- **Purpose**: Bulgarian legal content relevancy assessment
+- **Scoring Factors**:
+  - Semantic similarity to query
+  - Legal authority level (law > regulation > guideline)
+  - Content freshness and validity
+  - Domain reputation scoring
+- **Algorithm**: Weighted scoring with adaptive thresholds
+
+#### **AI Analysis Agent**
+- **Purpose**: Comprehensive legal content analysis and synthesis
+- **Functions**:
+  - Gap analysis in search results
+  - Legal precedent identification
+  - Cross-reference validation
+  - Summary generation with legal accuracy
+
+### 3. AI Flow Orchestration
+
+#### **Phase 1: Intelligent Query Expansion**
+```python
+# Flow: User Query → AI Processing → Expanded Queries
+Input: "лека телесна повреда обезщетение"
+AI Process: Legal term analysis + context building
+Output: ["лека телесна повреда", "обезщетение за болка", "вреди здраве компенсация"]
+```
+
+#### **Phase 2: Multi-Source Search Execution**
+```python
+# Flow: Expanded Queries → Parallel Search → Result Aggregation
+for domain in [ciela.net, apis.bg, lakorda.com]:
+    results = parallel_search(expanded_queries, domain)
+    aggregated_results.extend(results)
+```
+
+#### **Phase 3: AI-Powered Content Analysis**
+```python
+# Flow: Raw Results → Content Extraction → Relevancy Scoring → AI Analysis
+extracted_content = deep_extract(raw_results)
+scored_results = relevancy_score(extracted_content, query)
+ai_analysis = analyze_legal_context(scored_results)
+```
+
+## Advanced AI Features
+
+### 1. Adaptive Learning System
+- **Query Pattern Recognition**: Learning from user interaction patterns
+- **Result Quality Feedback**: Implicit feedback from user engagement
+- **Domain Knowledge Updates**: Regular legal database synchronization
+
+### 2. Bulgarian Legal NLP Pipeline
+- **Language Processing**: Specialized Bulgarian legal text processing
+- **Entity Recognition**: Legal entities (courts, laws, articles, dates)
+- **Relationship Extraction**: Legal relationships and dependencies
+- **Terminology Normalization**: Consistent legal term handling
+
+### 3. Context-Aware Processing
+- **Session Context**: Maintaining conversation context across queries
+- **Legal Domain Context**: Understanding legal procedure contexts
+- **User Intent Modeling**: Predicting user needs based on query patterns
+
+## Error Handling and Fallbacks
+
+### 1. AI Agent Error Recovery
+```python
+class AIAgentErrorHandler:
+    def handle_openai_error(self, error):
+        if "proxies" in str(error):
+            return self.fallback_to_local_processing()
+        elif "rate_limit" in str(error):
+            return self.implement_backoff_strategy()
+        else:
+            return self.graceful_degradation()
+```
+
+### 2. Search Quality Assurance
+- **Minimum Result Threshold**: Ensuring adequate search coverage
+- **Quality Gate Validation**: Content quality checks before presentation
+- **Fallback Search Strategies**: Alternative search methods for low-quality results
+
+### 3. Response Generation Fallbacks
+- **Template-Based Responses**: When AI generation fails
+- **Cached Response Retrieval**: For common queries
+- **Error Communication**: User-friendly error explanations
+
+## Performance Optimization
+
+### 1. AI Model Efficiency
+- **Prompt Engineering**: Optimized prompts for Bulgarian legal context
+- **Model Selection**: Task-appropriate model selection (GPT-4 vs GPT-3.5)
+- **Batch Processing**: Efficient batching of AI requests
+
+### 2. Caching Strategies
+- **Query Result Caching**: Caching frequent legal queries
+- **AI Response Caching**: Storing AI-generated analysis
+- **Content Extraction Caching**: Avoiding re-processing of documents
+
+### 3. Async Processing
+- **Parallel AI Calls**: Concurrent AI agent execution
+- **WebSocket Communication**: Real-time progress updates
+- **Background Processing**: Non-blocking AI operations
+
+## Future AI Enhancements
+
+### 1. Advanced Legal Reasoning
+- **Case Law Analysis**: AI-powered legal precedent analysis
+- **Legal Argumentation**: Structured legal argument generation
+- **Procedural Guidance**: Step-by-step legal procedure assistance
+
+### 2. Multimodal Capabilities
+- **Document OCR**: Processing scanned legal documents
+- **Voice Interface**: Speech-to-text for legal queries
+- **Visual Legal Diagrams**: Generating legal process flowcharts
+
+### 3. Specialized Legal AI Models
+- **Fine-tuned Bulgarian Legal Model**: Domain-specific language model
+- **Legal Entity Recognition**: Advanced Bulgarian legal NER
+- **Citation Analysis**: Automated legal citation validation
+
+## Monitoring and Analytics
+
+### 1. AI Performance Metrics
+- **Query Processing Time**: AI agent response times
+- **Result Relevancy Scores**: Quality metrics tracking
+- **User Satisfaction Indicators**: Engagement and feedback metrics
+
+### 2. System Health Monitoring
+- **AI Service Availability**: OpenAI API uptime tracking
+- **Error Rate Monitoring**: AI agent failure rate analysis
+- **Resource Usage Tracking**: Computing resource optimization
+
+---
+
+*This document provides a comprehensive overview of the AI agents and flows powering the Bulgarian Legal AI Assistant. Regular updates ensure alignment with evolving AI capabilities and legal requirements.*

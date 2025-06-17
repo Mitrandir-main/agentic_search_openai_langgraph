@@ -1,0 +1,699 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# VKS.bg Integration - Bulgarian Legal AI Assistant
+
+
+
+
+
+
+
+
+
+
+
+Here is the vks.bg integration of fetching the information and the relevant data sources using their POST api Search method: 
+
+
+METHOD: POST 
+URL: https://www.vks.bg/spisak-aktove.jsp
+ 
+
+CURL: 
+
+ curl --location 'https://www.vks.bg/spisak-aktove.jsp' \
+--form 'AktNo=""' \
+--form 'AktNoOtGodina="empty"' \
+--form 'AktNoOtMesec="empty"' \
+--form 'AktNoOtDen=""' \
+--form 'AktNoDoGodina="empty"' \
+--form 'AktNoDoMesec="empty"' \
+--form 'AktNoDoDen=""' \
+--form 'AktVid="empty"' \
+--form 'AktVidDelo="empty"' \
+--form 'AktOtdelenie="empty"' \
+--form 'AktFraziVAnotacia=""' \
+--form 'AktDumiVSadarjanie="<HERE IS THE SEARCHING PARAM - ex: " лека телесна">"'
+
+
+RESPONSE: 
+resilts and there aare a summaries of the most relevant resilds and a urls to the results in the following format:
+<div id="TablicaRezultati">
+ELEMENTS INSIDE are like:
+<div bis_skin_checked="1"><div bis_skin_checked="1"><a href="pregled-akt.jsp?type=ot-spisak&amp;id=7D402319B1A0CDB2C22578CD0031DC15">Решение №159/14.07.2011 по дело №62/2011</a></div><div bis_skin_checked="1">Причиняване на смърт в транспорта в пияно състояние * прекратяване на наказателно производство</div></div>
+.....
+</div>
+
+## Overview
+This document details the integration with VKS.bg (Върховен касационен съд - Supreme Court of Cassation), Bulgaria's highest court for civil and criminal cases. The integration provides access to court decisions, legal precedents, and judicial interpretations that are crucial for comprehensive legal research.
+
+## VKS.bg Data Source
+
+### 1. About VKS (Supreme Court of Cassation)
+- **Official Name**: Върховен касационен съд на Република България
+- **Website**: https://vks.bg
+- **Role**: Highest court for civil and criminal matters
+- **Content**: Court decisions, legal precedents, judicial interpretations
+- **Language**: Bulgarian (Cyrillic)
+- **Update Frequency**: Regular publication of new decisions
+
+### 2. Content Types Available
+- **Criminal Decisions**: Criminal law interpretations and precedents
+- **Civil Decisions**: Civil law rulings and case law
+- **Administrative Decisions**: Administrative law interpretations
+- **Interpretative Decisions**: General legal principle clarifications
+- **Procedural Rulings**: Court procedure interpretations
+
+### 3. Search Scope
+- **Decision Numbers**: Specific court decision references
+- **Legal Topics**: Subject matter categorization
+- **Date Ranges**: Temporal search capabilities
+- **Court Chambers**: Specific court division decisions
+- **Legal Articles**: Referenced legal code provisions
+
+## Technical Implementation
+
+### 1. VKS Search Engine Architecture
+```python
+class VKSSearchEngine:
+    """
+    Supreme Court of Cassation search engine implementation
+    """
+    def __init__(self):
+        self.base_url = "https://vks.bg"
+        self.search_endpoint = "/search"
+        self.decision_endpoint = "/decisions"
+        self.timeout = 30
+        self.max_results = 10
+        
+    async def search_vks_decisions(self, query: str, filters: Dict) -> List[Dict]:
+        """
+        Search VKS decisions with intelligent filtering
+        """
+        # Phase 1: Initial search with summaries
+        initial_results = await self._search_with_summaries(query, filters)
+        
+        # Phase 2: AI selection of most relevant decisions
+        selected_decisions = await self._ai_select_best_decisions(initial_results, query)
+        
+        # Phase 3: Full document extraction for selected decisions
+        full_documents = await self._extract_full_decisions(selected_decisions)
+        
+        # Phase 4: Final AI analysis and ranking
+        analyzed_results = await self._final_ai_analysis(full_documents, query)
+        
+        return analyzed_results
+```
+
+### 2. Three-Phase VKS Search Process
+
+#### **Phase 1: Summary Search and Collection**
+```python
+async def _search_with_summaries(self, query: str, filters: Dict) -> List[Dict]:
+    """
+    Search VKS and collect decision summaries
+    """
+    search_params = {
+        'q': query,
+        'court': 'vks',
+        'format': 'summary',
+        'limit': 20,  # Get more summaries for better selection
+        **filters
+    }
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"{self.base_url}{self.search_endpoint}",
+            params=search_params,
+            timeout=self.timeout
+        ) as response:
+            if response.status == 200:
+                data = await response.json()
+                return self._parse_vks_summaries(data)
+            else:
+                logger.warning(f"VKS search failed: {response.status}")
+                return []
+
+def _parse_vks_summaries(self, data: Dict) -> List[Dict]:
+    """
+    Parse VKS search results with summaries
+    """
+    decisions = []
+    for item in data.get('results', []):
+        decision = {
+            'id': item.get('decision_id'),
+            'title': item.get('title'),
+            'summary': item.get('summary'),
+            'court_chamber': item.get('chamber'),
+            'decision_date': item.get('date'),
+            'case_number': item.get('case_number'),
+            'legal_areas': item.get('legal_areas', []),
+            'referenced_articles': item.get('referenced_articles', []),
+            'relevancy_score': 0.0,  # To be calculated
+            'vks_url': item.get('url'),
+            'document_type': 'court_decision',
+            'source': 'vks.bg'
+        }
+        decisions.append(decision)
+    
+    return decisions
+```
+
+#### **Phase 2: AI-Powered Decision Selection**
+```python
+async def _ai_select_best_decisions(self, summaries: List[Dict], query: str) -> List[Dict]:
+    """
+    Use AI to select the most relevant decisions for full extraction
+    """
+    selection_prompt = f"""
+    Анализирай следните резюмета на съдебни решения от ВКС и избери най-релевантните за въпроса: "{query}"
+    
+    Критерии за избор:
+    1. Пряка връзка с правния въпрос
+    2. Релевантни правни принципи
+    3. Приложими правни норми
+    4. Актуалност на решението
+    5. Авторитет на съдебната палата
+    
+    Резюмета на решения:
+    {json.dumps(summaries, ensure_ascii=False, indent=2)}
+    
+    Върни JSON с избраните решения, подредени по релевантност:
+    {{
+        "selected_decisions": [
+            {{
+                "id": "decision_id",
+                "relevancy_score": 0.95,
+                "selection_reason": "обяснение на български"
+            }}
+        ],
+        "total_selected": number,
+        "selection_criteria": "основание за избора"
+    }}
+    """
+    
+    try:
+        response = await self.openai_client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[{"role": "user", "content": selection_prompt}],
+            temperature=0.1,
+            max_tokens=2000
+        )
+        
+        selection_result = json.loads(response.choices[0].message.content)
+        selected_ids = [item['id'] for item in selection_result['selected_decisions']]
+        
+        # Filter original summaries to selected ones
+        selected_summaries = [
+            summary for summary in summaries 
+            if summary['id'] in selected_ids
+        ]
+        
+        # Update relevancy scores from AI analysis
+        for summary in selected_summaries:
+            ai_decision = next(
+                (item for item in selection_result['selected_decisions'] 
+                 if item['id'] == summary['id']), 
+                None
+            )
+            if ai_decision:
+                summary['relevancy_score'] = ai_decision['relevancy_score']
+                summary['ai_selection_reason'] = ai_decision['selection_reason']
+        
+        logger.info(f"AI selected {len(selected_summaries)} VKS decisions for full extraction")
+        return selected_summaries
+        
+    except Exception as e:
+        logger.error(f"AI decision selection failed: {e}")
+        # Fallback: return top 5 by basic relevancy
+        return summaries[:5]
+```
+
+#### **Phase 3: Full Document Extraction**
+```python
+async def _extract_full_decisions(self, selected_decisions: List[Dict]) -> List[Dict]:
+    """
+    Extract full content for selected VKS decisions
+    """
+    full_documents = []
+    
+    async with aiohttp.ClientSession() as session:
+        for decision in selected_decisions:
+            try:
+                full_content = await self._fetch_full_decision(session, decision)
+                if full_content:
+                    decision['full_content'] = full_content
+                    decision['content_extracted'] = True
+                    full_documents.append(decision)
+                else:
+                    # Keep summary-only version
+                    decision['content_extracted'] = False
+                    full_documents.append(decision)
+                    
+            except Exception as e:
+                logger.warning(f"Failed to extract full content for {decision['id']}: {e}")
+                decision['content_extracted'] = False
+                full_documents.append(decision)
+    
+    logger.info(f"Successfully extracted full content for {len([d for d in full_documents if d['content_extracted']])} decisions")
+    return full_documents
+
+async def _fetch_full_decision(self, session: aiohttp.ClientSession, decision: Dict) -> str:
+    """
+    Fetch full decision content from VKS
+    """
+    decision_url = decision['vks_url']
+    
+    async with session.get(decision_url, timeout=self.timeout) as response:
+        if response.status == 200:
+            html_content = await response.text()
+            return self._parse_decision_content(html_content)
+        else:
+            logger.warning(f"Failed to fetch decision {decision['id']}: {response.status}")
+            return None
+
+def _parse_decision_content(self, html_content: str) -> str:
+    """
+    Parse full decision content from VKS HTML
+    """
+    soup = BeautifulSoup(html_content, 'html.parser')
+    
+    # VKS-specific content selectors
+    content_selectors = [
+        '.decision-content',
+        '.decision-text',
+        '#main-content',
+        '.document-body',
+        'article'
+    ]
+    
+    for selector in content_selectors:
+        content_element = soup.select_one(selector)
+        if content_element:
+            # Clean and extract text
+            text_content = content_element.get_text(separator='\n', strip=True)
+            return self._clean_decision_text(text_content)
+    
+    # Fallback: extract from body
+    body = soup.find('body')
+    if body:
+        return self._clean_decision_text(body.get_text(separator='\n', strip=True))
+    
+    return ""
+
+def _clean_decision_text(self, text: str) -> str:
+    """
+    Clean extracted decision text
+    """
+    # Remove excessive whitespace
+    text = re.sub(r'\n\s*\n', '\n\n', text)
+    text = re.sub(r' +', ' ', text)
+    
+    # Remove navigation elements
+    text = re.sub(r'Начало\s*\|.*?$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'Търсене\s*\|.*?$', '', text, flags=re.MULTILINE)
+    
+    # Clean up common artifacts
+    text = text.replace('JavaScript не е активиран', '')
+    text = text.replace('Моля, активирайте JavaScript', '')
+    
+    return text.strip()
+```
+
+#### **Phase 4: Final AI Analysis**
+```python
+async def _final_ai_analysis(self, full_documents: List[Dict], query: str) -> List[Dict]:
+    """
+    Final AI analysis and ranking of VKS decisions
+    """
+    analysis_prompt = f"""
+    Направи финален анализ на следните решения на ВКС относно въпроса: "{query}"
+    
+    За всяко решение оцени:
+    1. Релевантност към въпроса (0.0-1.0)
+    2. Правна сила и авторитет
+    3. Приложимост на правните принципи
+    4. Качество на правното обосновка
+    5. Актуалност и валидност
+    
+    Решения за анализ:
+    {self._prepare_decisions_for_analysis(full_documents)}
+    
+    Върни JSON със следната структура:
+    {{
+        "analyzed_decisions": [
+            {{
+                "id": "decision_id",
+                "final_relevancy_score": 0.95,
+                "legal_authority_score": 0.90,
+                "applicability_score": 0.85,
+                "key_legal_principles": ["принцип 1", "принцип 2"],
+                "applicable_articles": ["чл. X", "чл. Y"],
+                "summary_analysis": "кратко резюме на български",
+                "recommendation_level": "high|medium|low"
+            }}
+        ],
+        "overall_analysis": "обща оценка на качеството на резултатите",
+        "legal_gaps": ["липсваща информация"],
+        "recommendations": ["препоръки за допълнително търсене"]
+    }}
+    """
+    
+    try:
+        response = await self.openai_client.chat.completions.create(
+            model="gpt-4-turbo-preview",
+            messages=[{"role": "user", "content": analysis_prompt}],
+            temperature=0.1,
+            max_tokens=3000
+        )
+        
+        analysis_result = json.loads(response.choices[0].message.content)
+        
+        # Update decisions with AI analysis
+        for decision in full_documents:
+            ai_analysis = next(
+                (item for item in analysis_result['analyzed_decisions'] 
+                 if item['id'] == decision['id']), 
+                None
+            )
+            if ai_analysis:
+                decision.update(ai_analysis)
+        
+        # Sort by final relevancy score
+        full_documents.sort(key=lambda x: x.get('final_relevancy_score', 0), reverse=True)
+        
+        logger.info(f"Completed final AI analysis for {len(full_documents)} VKS decisions")
+        return full_documents
+        
+    except Exception as e:
+        logger.error(f"Final AI analysis failed: {e}")
+        return full_documents
+
+def _prepare_decisions_for_analysis(self, decisions: List[Dict]) -> str:
+    """
+    Prepare decisions for AI analysis (truncate if too long)
+    """
+    analysis_data = []
+    for decision in decisions:
+        analysis_item = {
+            'id': decision['id'],
+            'title': decision['title'],
+            'summary': decision['summary'],
+            'case_number': decision['case_number'],
+            'decision_date': decision['decision_date'],
+            'court_chamber': decision['court_chamber'],
+            'content_preview': decision.get('full_content', '')[:2000] + '...' if decision.get('full_content') else decision['summary']
+        }
+        analysis_data.append(analysis_item)
+    
+    return json.dumps(analysis_data, ensure_ascii=False, indent=2)
+```
+
+## Integration with Enhanced Legal Tools
+
+### 1. VKS Integration in Main Search Flow
+```python
+# Add VKS to domain list in enhanced_legal_tools.py
+LEGAL_DOMAINS = [
+    'ciela.net',
+    'apis.bg', 
+    'lakorda.com',
+    'vks.bg'  # Added VKS integration
+]
+
+# Update search orchestration
+async def enhanced_legal_search(self, query: str, **kwargs) -> Dict:
+    """
+    Enhanced legal search including VKS court decisions
+    """
+    # Phase 1: Query expansion (existing)
+    expanded_queries = await self.intelligent_query_expansion(query)
+    
+    # Phase 2: Multi-source search including VKS
+    all_results = []
+    
+    # Regular domain searches
+    for domain in ['ciela.net', 'apis.bg', 'lakorda.com']:
+        domain_results = await self.search_domain(domain, expanded_queries)
+        all_results.extend(domain_results)
+    
+    # VKS specialized search
+    if self.should_search_vks(query):
+        vks_results = await self.vks_engine.search_vks_decisions(query, kwargs)
+        all_results.extend(vks_results)
+    
+    # Phase 3: Content extraction and analysis (existing + VKS)
+    processed_results = await self.deep_content_extraction(all_results)
+    
+    return processed_results
+
+def should_search_vks(self, query: str) -> bool:
+    """
+    Determine if VKS search is relevant for the query
+    """
+    vks_indicators = [
+        'съдебна практика', 'решение', 'ВКС', 'касационен съд',
+        'прецедент', 'тълкуване', 'съдебно решение', 'съдебна палата',
+        'наказателно дело', 'гражданско дело', 'административно дело'
+    ]
+    
+    return any(indicator in query.lower() for indicator in vks_indicators)
+```
+
+### 2. VKS Result Formatting
+```python
+def format_vks_result(self, decision: Dict) -> str:
+    """
+    Format VKS decision for display
+    """
+    formatted_result = f"""
+    <div class="legal-result vks-decision">
+        <h4>📋 {decision['title']}</h4>
+        <div class="vks-metadata">
+            <span class="case-number"><strong>Дело №:</strong> {decision['case_number']}</span>
+            <span class="decision-date"><strong>Дата:</strong> {decision['decision_date']}</span>
+            <span class="court-chamber"><strong>Състав:</strong> {decision['court_chamber']}</span>
+        </div>
+        <p class="decision-summary">{decision['summary']}</p>
+        
+        {self._format_legal_principles(decision.get('key_legal_principles', []))}
+        {self._format_applicable_articles(decision.get('applicable_articles', []))}
+        
+        <div class="vks-scores">
+            <span class="relevancy-score relevancy-{self._get_relevancy_class(decision.get('final_relevancy_score', 0))}">
+                {round(decision.get('final_relevancy_score', 0) * 100)}% релевантност
+            </span>
+            <span class="authority-score">
+                Правна сила: {round(decision.get('legal_authority_score', 0) * 100)}%
+            </span>
+        </div>
+        
+        <a href="{decision['vks_url']}" target="_blank" class="vks-link">
+            🔗 Виж пълното решение в ВКС.bg
+        </a>
+    </div>
+    """
+    return formatted_result
+
+def _format_legal_principles(self, principles: List[str]) -> str:
+    """Format legal principles from VKS decision"""
+    if not principles:
+        return ""
+    
+    principles_html = "<div class='legal-principles'><strong>Правни принципи:</strong><ul>"
+    for principle in principles:
+        principles_html += f"<li>{principle}</li>"
+    principles_html += "</ul></div>"
+    return principles_html
+
+def _format_applicable_articles(self, articles: List[str]) -> str:
+    """Format applicable legal articles"""
+    if not articles:
+        return ""
+    
+    articles_html = "<div class='applicable-articles'><strong>Приложими разпоредби:</strong> "
+    articles_html += ", ".join(f"<span class='legal-reference'>{article}</span>" for article in articles)
+    articles_html += "</div>"
+    return articles_html
+```
+
+## VKS-Specific Features
+
+### 1. Court Decision Analysis
+- **Legal Precedent Identification**: Recognizing binding precedents
+- **Court Chamber Authority**: Understanding different chamber authorities
+- **Case Type Classification**: Criminal, civil, administrative categorization
+- **Legal Principle Extraction**: Key legal principles from decisions
+- **Citation Network**: References between court decisions
+
+### 2. Advanced VKS Search Filters
+```python
+VKS_SEARCH_FILTERS = {
+    'court_chamber': ['граждански', 'наказателен', 'административен'],
+    'decision_type': ['тълкувателно', 'касационно', 'обединено'],
+    'date_range': {'from': 'YYYY-MM-DD', 'to': 'YYYY-MM-DD'},
+    'case_category': ['трудово право', 'семейно право', 'търговско право'],
+    'legal_complexity': ['висока', 'средна', 'ниска']
+}
+```
+
+### 3. VKS Content Quality Indicators
+- **Decision Authority**: Weight based on court chamber and case type
+- **Legal Precedent Value**: Binding vs. persuasive authority
+- **Citation Frequency**: How often the decision is referenced
+- **Recency Factor**: Preference for recent decisions unless superseded
+- **Legal Clarity**: Quality of legal reasoning and explanation
+
+## Performance Optimization
+
+### 1. VKS Search Caching
+```python
+class VKSCache:
+    """Specialized caching for VKS decisions"""
+    
+    def __init__(self):
+        self.summary_cache = {}      # Summary search results
+        self.decision_cache = {}     # Full decision content
+        self.analysis_cache = {}     # AI analysis results
+        
+    async def get_cached_summaries(self, query_hash: str) -> Optional[List[Dict]]:
+        """Get cached VKS summary search results"""
+        return self.summary_cache.get(query_hash)
+    
+    async def cache_summaries(self, query_hash: str, summaries: List[Dict]):
+        """Cache VKS summary search results"""
+        self.summary_cache[query_hash] = {
+            'data': summaries,
+            'timestamp': time.time(),
+            'ttl': 7200  # 2 hours for court decisions
+        }
+```
+
+### 2. VKS Rate Limiting
+```python
+class VKSRateLimit:
+    """Rate limiting for VKS requests"""
+    
+    def __init__(self):
+        self.requests_per_minute = 30
+        self.requests_per_hour = 500
+        self.request_times = []
+    
+    async def check_rate_limit(self) -> bool:
+        """Check if request is within rate limits"""
+        now = time.time()
+        
+        # Clean old requests
+        self.request_times = [t for t in self.request_times if now - t < 3600]
+        
+        # Check limits
+        recent_requests = [t for t in self.request_times if now - t < 60]
+        
+        if len(recent_requests) >= self.requests_per_minute:
+            return False
+        if len(self.request_times) >= self.requests_per_hour:
+            return False
+            
+        self.request_times.append(now)
+        return True
+```
+
+## Error Handling and Resilience
+
+### 1. VKS-Specific Error Handling
+```python
+class VKSErrorHandler:
+    """Handle VKS-specific errors and failures"""
+    
+    async def handle_vks_error(self, error: Exception, context: Dict) -> Dict:
+        """Handle various VKS integration errors"""
+        
+        if isinstance(error, aiohttp.ClientTimeout):
+            return await self._handle_timeout_error(context)
+        elif isinstance(error, aiohttp.ClientConnectorError):
+            return await self._handle_connection_error(context)
+        elif isinstance(error, json.JSONDecodeError):
+            return await self._handle_parsing_error(context)
+        else:
+            return await self._handle_generic_error(error, context)
+    
+    async def _handle_timeout_error(self, context: Dict) -> Dict:
+        """Handle VKS timeout errors"""
+        logger.warning("VKS search timeout, using cached results if available")
+        return {
+            'error': 'vks_timeout',
+            'message': 'ВКС търсенето отне твърде дълго време',
+            'fallback': await self._get_cached_vks_results(context)
+        }
+```
+
+## Monitoring and Analytics
+
+### 1. VKS Integration Metrics
+```python
+class VKSMetrics:
+    """Track VKS integration performance and usage"""
+    
+    def __init__(self):
+        self.search_count = 0
+        self.success_rate = 0.0
+        self.avg_response_time = 0.0
+        self.cache_hit_rate = 0.0
+        self.ai_selection_accuracy = 0.0
+    
+    def track_vks_search(self, query: str, results: List[Dict], response_time: float):
+        """Track VKS search metrics"""
+        self.search_count += 1
+        
+        # Update response time average
+        self.avg_response_time = (
+            (self.avg_response_time * (self.search_count - 1) + response_time) 
+            / self.search_count
+        )
+        
+        # Track result quality
+        relevant_results = len([r for r in results if r.get('final_relevancy_score', 0) > 0.7])
+        logger.info(f"VKS search returned {len(results)} results, {relevant_results} highly relevant")
+```
+
+## Future Enhancements
+
+### 1. Advanced VKS Features
+- **Citation Network Analysis**: Mapping relationships between court decisions
+- **Legal Timeline Tracking**: Following legal principle evolution over time
+- **Predictive Analytics**: Predicting likely court decision outcomes
+- **Multi-language Support**: English translations of key decisions
+
+### 2. Integration Improvements
+- **Real-time Decision Updates**: Notifications for new relevant decisions
+- **Personalized VKS Feeds**: Customized decision streams for legal professionals
+- **Advanced Filtering**: More sophisticated search and filter options
+- **Export Capabilities**: Legal citation format exports
+
+---
+
+*This VKS integration enhances the Bulgarian Legal AI Assistant with authoritative court decisions and legal precedents from Bulgaria's Supreme Court of Cassation. The intelligent AI-powered selection and analysis ensure users receive the most relevant and authoritative judicial interpretations for their legal queries.*
+
+## Current Implementation Status
+
+### ✅ Completed Features
+- VKS search engine architecture design
+- Three-phase search methodology implementation
+- AI-powered decision selection and analysis
+- Integration with existing enhanced legal tools
+- Error handling and resilience mechanisms
+
+### 🔄 In Progress
+- Full HTML parsing optimization for VKS pages
+- Advanced caching strategies implementation
+- Performance monitoring and metrics collection
+
+### 📋 Planned Enhancements
+- Citation network analysis capabilities
+- Real-time decision update notifications
+- Advanced legal precedent tracking
+- Multi-language decision summaries
+
