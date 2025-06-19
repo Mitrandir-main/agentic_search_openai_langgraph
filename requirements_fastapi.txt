@@ -13,20 +13,20 @@ langchain-core>=0.3.17
 
 # Enhanced search and web scraping
 duckduckgo-search
-beautifulsoup4
-requests
-lxml
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+lxml>=4.9.0
 html2text
-html5lib==1.1
-chardet==5.2.0
+html5lib>=1.1
+chardet>=5.2.0
 
 # Google Custom Search Engine API
 google-api-python-client>=2.0.0
 
 # Data processing and analysis
-pandas
-numpy
-python-dotenv
+pandas>=2.0.0
+numpy>=1.24.0
+python-dotenv>=1.0.0
 
 # Performance and error handling
 tiktoken
@@ -35,26 +35,22 @@ retry
 tenacity
 
 # Bulgarian text processing
-regex
-unidecode
+regex>=2024.9.11
+unidecode>=1.3.8
 
-# Exact dependency versions (for compatibility)
+# Exact dependency versions (for compatibility with Python 3.11)
 openai==1.54.3
 langchain==0.3.7
 langchain-openai==0.2.8
 langchain-community==0.3.5
 requests==2.32.3
 python-dotenv==1.0.1
-typing-extensions==4.12.2
+typing-extensions>=4.8.0
 
-# Enhanced relevancy scoring dependencies
-scikit-learn==1.5.2
-numpy==1.26.4
-scipy==1.14.1
-
-# Text processing for Bulgarian
-regex==2024.9.11
-unidecode==1.3.8
+# Enhanced relevancy scoring dependencies (Python 3.11 compatible)
+scikit-learn>=1.3.0
+numpy>=1.24.0
+scipy>=1.10.0
 
 # Additional FastAPI middleware and utilities
 python-jose[cryptography]>=3.3.0
@@ -62,4 +58,8 @@ passlib[bcrypt]>=1.7.4
 aiofiles>=23.2.1
 
 # Logging and monitoring
-structlog>=23.2.0 
+structlog>=23.2.0
+
+# HTTP client for async operations
+aiohttp>=3.8.0
+httpx>=0.25.0 

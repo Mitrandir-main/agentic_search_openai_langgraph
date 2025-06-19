@@ -113,11 +113,12 @@ def main():
         # Search methodology selection
         methodology = st.selectbox(
             "🧠 Методология за Търсене",
-            ["enhanced", "standard", "experimental"],
+            ["enhanced", "standard", "experimental", "lex_bg"],
             format_func=lambda x: {
                 "enhanced": "🚀 Напредна (BM25 + Семантика + RRF)",
                 "standard": "📊 Стандартна (Основно търсене)",
-                "experimental": "🧪 Експериментална (Beta функции)"
+                "experimental": "🧪 Експериментална (Beta функции)",
+                "lex_bg": "🏛️ LEX.BG Специализирано (Директно от lex.bg)"
             }[x],
             help="Изберете алгоритъм за анализ и класиране на резултатите"
         )
@@ -232,6 +233,16 @@ def main():
             <p><strong>Quality Scoring:</strong> Многофакторна оценка включваща авторитет, релевантност и увереност</p>
         </div>
         """, unsafe_allow_html=True)
+    elif methodology == "lex_bg":
+        st.markdown("""
+        <div class="search-methodology">
+            <h4>🏛️ Активна Методология: LEX.BG Специализирано Търсене</h4>
+            <p><strong>Директен достъп:</strong> Заявки директно към базата данни на LEX.BG</p>
+            <p><strong>Категоризация:</strong> Автоматично групиране по Вещи лица, Документи, Нормативни актове, Съдилища</p>
+            <p><strong>Metadata извличане:</strong> Пълна информация за източника и релевантността</p>
+            <p><strong>Content preview:</strong> Автоматично извличане на съдържание от документи и закони</p>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Search execution and results
     if search_button and query:
@@ -285,8 +296,12 @@ def main():
                         max_results=max_results, 
                         min_relevancy=min_relevancy/100
                     )
+                elif methodology == "lex_bg":
+                    from enhanced_legal_tools import lex_bg_search
+                    result = lex_bg_search(query, max_results=max_results)
                 else:
                     # Fallback to standard search using the same enhanced function  
+                    from enhanced_legal_tools import enhanced_bulgarian_legal_search_sync
                     result = enhanced_bulgarian_legal_search_sync(
                         query, 
                         max_results=max_results, 

@@ -16,6 +16,7 @@ import time
 import asyncio
 import logging
 from dotenv import load_dotenv
+import json
 
 # Bulgarian legal domains configuration
 BULGARIAN_LEGAL_DOMAINS = {
@@ -118,7 +119,7 @@ class BulgarianLegalExtractor:
 
 extractor = BulgarianLegalExtractor()
 
-def google_cse_search_legal(query: str, site_search: str = None, country: str = "bg", language: str = "lang_bg", num_results: int = 8) -> List[Dict]:
+def google_cse_search_legal(query: str, site_search: Optional[str] = None, country: str = "bg", language: str = "lang_bg", num_results: int = 8) -> List[Dict]:
     """
     Legal-focused Google Custom Search Engine with enhanced fallback.
     """
@@ -184,7 +185,7 @@ def google_cse_search_legal(query: str, site_search: str = None, country: str = 
         logger.info("🦆 Falling back to DuckDuckGo search")
         return fallback_ddg_search(query, site_search)
 
-def fallback_ddg_search(query: str, site_search: str = None) -> List[Dict]:
+def fallback_ddg_search(query: str, site_search: Optional[str] = None) -> List[Dict]:
     """
     Enhanced fallback DuckDuckGo search for legal content.
     This is the primary fallback when Google CSE fails.
@@ -249,7 +250,7 @@ def fallback_ddg_search(query: str, site_search: str = None) -> List[Dict]:
         return []
 
 @tool("bulgarian_legal_search", return_direct=False)
-def bulgarian_legal_search(query: str, specific_domain: str = None) -> str:
+def bulgarian_legal_search(query: str, specific_domain: Optional[str] = None) -> List[Dict]:
     """
     Enhanced Bulgarian legal search with Google CSE and multi-domain targeting.
     
@@ -326,7 +327,7 @@ def get_domain_description(domain: str) -> str:
     return descriptions.get(domain, domain)
 
 @tool("legal_precedent_search", return_direct=False)
-def legal_precedent_search(legal_issue: str, court_level: str = "all") -> str:
+def legal_precedent_search(legal_issue: str, court_level: str = "all") -> List[Dict]:
     """
     Search for Bulgarian legal precedents using Google CSE with intelligent fallbacks.
     
@@ -384,14 +385,14 @@ def legal_precedent_search(legal_issue: str, court_level: str = "all") -> str:
             logger.info(f"Found {len(results)} precedent results")
             return results[:10]
         else:
-            return f"Грешка при търсене на precedents: No results found"
+            return []
             
     except Exception as e:
         logger.error(f"Precedent search error: {e}")
-        return f"Грешка при търсене на precedents: {str(e)}"
+        return []
 
 @tool("legal_citation_extractor", return_direct=False)
-def legal_citation_extractor(text: str) -> str:
+def legal_citation_extractor(text: str) -> Dict[str, Any]:
     """
     Extract Bulgarian legal citations from text using enhanced pattern matching.
     
@@ -477,7 +478,7 @@ def categorize_citations(citations: List[str]) -> Dict[str, int]:
     return {k: v for k, v in categories.items() if v > 0}
 
 @tool("legal_area_classifier", return_direct=False) 
-def legal_area_classifier(query: str) -> str:
+def legal_area_classifier(query: str) -> Dict[str, Any]:
     """
     Classify legal queries into Bulgarian legal areas for targeted search.
     
@@ -560,7 +561,7 @@ def legal_area_classifier(query: str) -> str:
     return result
 
 @tool("legal_document_analyzer", return_direct=False)
-def legal_document_analyzer(document_url: str) -> str:
+def legal_document_analyzer(document_url: str) -> Dict[str, Any]:
     """
     Analyze Bulgarian legal documents with enhanced content extraction.
     
@@ -656,7 +657,8 @@ def get_enhanced_legal_tools():
         legal_precedent_search,
         legal_area_classifier,
         legal_citation_extractor,
-        enhanced_bulgarian_legal_search_tool
+        enhanced_bulgarian_legal_search_tool,
+        lex_bg_search
     ] 
 
 def preprocess_query(query: str) -> str:
@@ -738,11 +740,11 @@ SEARCH_QUERIES:
 """
 
         response = llm.invoke(expansion_prompt)
-        content = response.content
+        content = response.content if hasattr(response, 'content') else str(response)
         
         # Extract queries from response
         queries = []
-        if "SEARCH_QUERIES:" in content:
+        if isinstance(content, str) and "SEARCH_QUERIES:" in content:
             query_section = content.split("SEARCH_QUERIES:")[1]
             lines = query_section.strip().split('\n')
             for line in lines:
@@ -754,7 +756,7 @@ SEARCH_QUERIES:
                         queries.append(query_text)
         
         # Log the AI's reasoning
-        if "ANALYSIS:" in content:
+        if isinstance(content, str) and "ANALYSIS:" in content:
             analysis = content.split("SEARCH_QUERIES:")[0].replace("ANALYSIS:", "").strip()
             logger.info(f"🧠 AI Legal Analysis (Iteration {iteration}): {analysis[:200]}...")
         
@@ -824,11 +826,11 @@ REFINED_QUERIES:
 """
 
         response = llm.invoke(refinement_prompt)
-        content = response.content
+        content = response.content if hasattr(response, 'content') else str(response)
         
         # Extract refined queries
         queries = []
-        if "REFINED_QUERIES:" in content:
+        if isinstance(content, str) and "REFINED_QUERIES:" in content:
             query_section = content.split("REFINED_QUERIES:")[1]
             lines = query_section.strip().split('\n')
             for line in lines:
@@ -839,7 +841,7 @@ REFINED_QUERIES:
                         queries.append(query_text)
         
         # Log the AI's analysis
-        if "ANALYSIS:" in content:
+        if isinstance(content, str) and "ANALYSIS:" in content:
             analysis = content.split("REFINED_QUERIES:")[0].replace("ANALYSIS:", "").strip()
             logger.info(f"🔍 AI Gap Analysis: {analysis[:200]}...")
         
@@ -1871,10 +1873,6 @@ def vks_bg_search(query: str, max_results: int = 10) -> List[Dict]:
                 except Exception:
                     continue
         
-        # If still no results, use simulation for testing
-        if not all_vks_results:
-            all_vks_results = simulate_vks_search(query, max_results)
-        
         # Remove duplicates based on URL
         seen_urls = set()
         unique_results = []
@@ -1914,7 +1912,7 @@ def vks_bg_search(query: str, max_results: int = 10) -> List[Dict]:
         
     except Exception as e:
         logger.error(f"VKS search error: {e}")
-        return simulate_vks_search(query, max_results)  # Fallback to simulation
+        return []
 
 def calculate_vks_relevance(query: str, result: Dict) -> float:
     """Calculate relevance score for VKS documents"""
@@ -2094,6 +2092,7 @@ async def analyze_vks_documents(query: str, vks_results: List[Dict]) -> Dict[str
             from openai import OpenAI
             client = OpenAI()
             
+            ai_analysis = None
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
@@ -2104,14 +2103,23 @@ async def analyze_vks_documents(query: str, vks_results: List[Dict]) -> Dict[str
                 temperature=0.1
             )
             
-            ai_analysis = response.choices[0].message.content
+            if response.choices and response.choices[0].message.content:
+                content_str = response.choices[0].message.content
+                if content_str:
+                    ai_analysis = content_str.strip()
+                else:
+                    ai_analysis = ""
+            else:
+                ai_analysis = ""
             
             # Parse AI response
-            found_exact_match = "ТОЧНО_СЪВПАДЕНИЕ: ДА" in ai_analysis
+            found_exact_match = False
+            if ai_analysis and "ТОЧНО_СЪВПАДЕНИЕ: ДА" in ai_analysis:
+                found_exact_match = True
             
             # Extract selected documents
             selected_docs = []
-            if "ИЗБРАНИ_ДОКУМЕНТИ:" in ai_analysis:
+            if ai_analysis and "ИЗБРАНИ_ДОКУМЕНТИ:" in ai_analysis:
                 try:
                     selected_line = ai_analysis.split("ИЗБРАНИ_ДОКУМЕНТИ:")[1].split("\n")[0]
                     doc_numbers = [int(x.strip()) for x in selected_line.split(",") if x.strip().isdigit()]
@@ -2127,7 +2135,7 @@ async def analyze_vks_documents(query: str, vks_results: List[Dict]) -> Dict[str
                     "found_exact_match": True,
                     "summary": f"Намерени са точни съвпадения в {len(selected_docs)} документа от ВКС",
                     "best_documents": selected_docs,
-                    "analysis": ai_analysis,
+                    "analysis": ai_analysis or "Анализът е генериран успешно",
                     "query": query,
                     "total_documents": len(vks_results),
                     "ai_confidence": "high"
@@ -2137,7 +2145,7 @@ async def analyze_vks_documents(query: str, vks_results: List[Dict]) -> Dict[str
                     "found_exact_match": False,
                     "summary": f"Не са намерени точни съвпадения, но има {len(selected_docs)} релевантни документа",
                     "best_documents": selected_docs,
-                    "analysis": ai_analysis,
+                    "analysis": ai_analysis or "Анализът е генериран, но не са намерени точни съвпадения",
                     "query": query,
                     "total_documents": len(vks_results),
                     "ai_confidence": "medium",
@@ -2248,3 +2256,282 @@ def vks_bg_search_tool(query: str) -> str:
     except Exception as e:
         logger.error(f"❌ VKS search tool error: {e}")
         return f"❌ Възникна грешка при търсенето в ВКС: {str(e)}"
+
+@tool("lex_bg_search_fixed", return_direct=False)
+def lex_bg_search(query: str, max_results: int = 15) -> str:
+    """
+    WORKING VERSION: Search and scrape results from lex.bg legal information site.
+    This version properly handles Bulgarian text encoding.
+    
+    Args:
+        query: Search query in Bulgarian
+        max_results: Maximum number of results to return (default: 15)
+    
+    Returns:
+        JSON string containing scraped sources with their titles, URLs, and content
+    """
+    logger.info(f"🏛️ LEX.BG Search (Fixed) for: '{query}'")
+    
+    try:
+        # Use GET request instead of POST to avoid encoding issues
+        url = "https://lex.bg/search"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "bg,en-US;q=0.7,en;q=0.3",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+        }
+        
+        # Use GET parameters instead of POST data to avoid encoding issues
+        params = {
+            "searchBox": query,
+            "search_for_all": "1",
+            "search_for_spravochnik": "1"
+        }
+        
+        logger.info(f"🔍 Sending GET request to lex.bg with query: {query}")
+        
+        # Use session for better handling
+        session = requests.Session()
+        session.headers.update(headers)
+        
+        # Make GET request instead of POST
+        response = session.get(url, params=params, timeout=30, verify=False)
+        response.raise_for_status()
+        
+        # Set the correct encoding for Bulgarian content
+        response.encoding = 'windows-1251'
+        content_text = response.text
+        
+        # Parse the HTML response
+        soup = BeautifulSoup(content_text, 'html.parser')
+        
+        logger.info(f"📄 Parsed HTML with {len(soup.find_all())} elements")
+        
+        # Check if there are no results first
+        no_results_indicators = [
+            "Няма резултати",
+            "Няма намерени резултати", 
+            "No results",
+            "резултати от търсенето"
+        ]
+        
+        page_text = soup.get_text().lower()
+        if any(indicator.lower() in page_text for indicator in no_results_indicators):
+            logger.warning(f"⚠️ No results found for query: {query}")
+            return json.dumps({
+                "status": "no_results", 
+                "message": f"Няма намерени резултати за '{query}' в Lex.bg",
+                "query": query,
+                "sources": []
+            }, ensure_ascii=False, indent=2)
+        
+        # Find search results - lex.bg specific selectors
+        sources = []
+        result_count = 0
+        
+        # Method 1: Look for structured results in main content areas
+        main_containers = [
+            soup.find('div', id='colleft'),
+            soup.find('div', class_='col630'),
+            soup.find('div', id='contentcolumn'),
+            soup.find('div', id='container')
+        ]
+        
+        for container in main_containers:
+            if container and result_count < max_results:
+                # Look for all links that could be search results
+                all_links = container.find_all('a', href=True)
+                
+                for link in all_links:
+                    if result_count >= max_results:
+                        break
+                    
+                    href = link.get('href', '').strip()
+                    title = link.get_text(strip=True)
+                    
+                    # Filter for actual content links (not navigation)
+                    if (href and title and 
+                        len(title) > 10 and  # Substantial title
+                        not href.startswith('javascript:') and
+                        not href.startswith('#') and
+                        not href.startswith('mailto:') and
+                        'login' not in href.lower() and
+                        'register' not in href.lower() and
+                        'password' not in href.lower() and
+                        'search' not in href.lower() and
+                        href != '/' and href != url):
+                        
+                        # Make absolute URL
+                        if href.startswith('/'):
+                            href = 'https://lex.bg' + href
+                        elif not href.startswith('http'):
+                            href = 'https://lex.bg/' + href
+                        
+                        # Determine category from link context
+                        category = "General Results"
+                        parent_text = ""
+                        if link.parent:
+                            parent_text = link.parent.get_text(strip=True).lower()
+                        
+                        if any(term in parent_text for term in ['закон', 'law', 'наредба']):
+                            category = "Нормативни актове"
+                        elif any(term in parent_text for term in ['съд', 'решение', 'court']):
+                            category = "Съдебна практика"
+                        elif any(term in parent_text for term in ['новин', 'news']):
+                            category = "Новини"
+                        
+                        sources.append({
+                            "title": title,
+                            "url": href,
+                            "category": category,
+                            "source_type": "lex_bg_result",
+                            "domain": "lex.bg",
+                            "relevancy_score": calculate_lex_relevancy(query, title, category),
+                            "extraction_timestamp": datetime.now().isoformat()
+                        })
+                        result_count += 1
+                        
+                if sources:  # If we found results in this container, don't check others
+                    break
+        
+        # Sort by relevancy
+        sources.sort(key=lambda x: x.get('relevancy_score', 0), reverse=True)
+        
+        # Calculate statistics
+        category_stats = {}
+        for source in sources:
+            category = source.get('category', 'Unknown')
+            category_stats[category] = category_stats.get(category, 0) + 1
+        
+        result_data = {
+            "status": "success",
+            "query": query,
+            "total_results": len(sources),
+            "sources": sources,
+            "statistics": {
+                "categories": category_stats,
+                "avg_relevancy": sum(s.get('relevancy_score', 0) for s in sources) / len(sources) if sources else 0
+            },
+            "metadata": {
+                "search_engine": "lex.bg",
+                "search_timestamp": datetime.now().isoformat(),
+                "method": "GET_request",
+                "encoding": "windows-1251"
+            }
+        }
+        
+        logger.info(f"✅ LEX.BG search completed: {len(sources)} results from {len(category_stats)} categories")
+        
+        return json.dumps(result_data, ensure_ascii=False, indent=2)
+        
+    except requests.exceptions.RequestException as e:
+        logger.error(f"❌ LEX.BG request error: {e}")
+        return json.dumps({
+            "status": "request_error",
+            "message": f"Грешка при заявката към Lex.bg: {str(e)}",
+            "query": query,
+            "sources": []
+        }, ensure_ascii=False, indent=2)
+        
+    except Exception as e:
+        logger.error(f"❌ LEX.BG processing error: {e}")
+        import traceback
+        traceback.print_exc()
+        return json.dumps({
+            "status": "processing_error", 
+            "message": f"Грешка при обработката на резултатите: {str(e)}",
+            "query": query,
+            "sources": []
+        }, ensure_ascii=False, indent=2)
+
+def calculate_lex_relevancy(query: str, title: str, category: str) -> float:
+    """Calculate relevancy score for LEX.bg results"""
+    try:
+        score = 0.0
+        query_words = set(query.lower().split())
+        title_words = set(title.lower().split())
+        category_words = set(category.lower().split())
+        
+        # Exact matches get highest score
+        exact_matches = len(query_words.intersection(title_words))
+        score += exact_matches * 0.4
+        
+        # Partial matches in title
+        for q_word in query_words:
+            for t_word in title_words:
+                if q_word in t_word or t_word in q_word:
+                    score += 0.2
+        
+        # Category relevance bonus
+        category_matches = len(query_words.intersection(category_words))
+        score += category_matches * 0.1
+        
+        # Normalize to 0-1 range
+        return min(score, 1.0)
+        
+    except Exception:
+        return 0.5  # Default moderate relevancy
+
+def extract_lex_content_preview(url: str) -> str:
+    """Extract content preview from LEX.bg document pages"""
+    try:
+        if not url.startswith('http'):
+            return ""
+            
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+        
+        response = requests.get(url, headers=headers, timeout=10, verify=False)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Try to find main content areas
+        content_selectors = [
+            'div.content',
+            'div.main-content', 
+            'div.document-content',
+            'div.law-content',
+            'article',
+            'main'
+        ]
+        
+        content_text = ""
+        for selector in content_selectors:
+            content_elem = soup.select_one(selector)
+            if content_elem:
+                content_text = content_elem.get_text(strip=True)
+                break
+        
+        # Fallback to body text if no specific content area found
+        if not content_text:
+            body = soup.find('body')
+            if body:
+                content_text = body.get_text(strip=True)
+        
+        # Clean and truncate content
+        if content_text:
+            # Remove extra whitespace
+            content_text = re.sub(r'\s+', ' ', content_text)
+            # Truncate to reasonable preview length
+            if len(content_text) > 500:
+                content_text = content_text[:500] + "..."
+        
+        return content_text
+        
+    except Exception as e:
+        logger.warning(f"Could not extract content from {url}: {e}")
+        return ""
+
+
+
+if __name__ == "__main__":
+    result = lex_bg_search_fixed('права')  # Returns 15 results
+    # result2 = lex_bg_search_fixed('обир')  # Returns 15 results
+    print(result)
+    # print(result2)

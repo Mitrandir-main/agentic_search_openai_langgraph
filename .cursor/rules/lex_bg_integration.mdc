@@ -1,0 +1,272 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+
+
+
+Here is the lex.bg integration of fetching the information and the relevant data sources using their POST api Search method:
+
+## LEX.BG Integration Tool Structure
+
+### Tool Implementation: `lex_bg_search`
+
+The tool has been implemented in `enhanced_legal_tools.py` with the following structure:
+
+```python
+@tool("lex_bg_search", return_direct=False)
+def lex_bg_search(query: str, max_results: int = 15) -> str:
+    """
+    Search and scrape results from lex.bg legal information site.
+    
+    Args:
+        query: Search query in Bulgarian
+        max_results: Maximum number of results to return (default: 15)
+    
+    Returns:
+        JSON string containing scraped sources with their titles, URLs, and content
+    """
+```
+
+### Tool Features:
+
+1. **Direct API Integration**: Uses the exact POST request format specified below
+2. **Comprehensive Scraping**: Extracts all sources from all categories (Вещи лица, Документи, Нормативни актове, Областни администрации, Съдилища)
+3. **Metadata Extraction**: Provides source type, category, relevancy score, and timestamps
+4. **Content Preview**: For documents and laws, attempts to extract content previews
+5. **JSON Output**: Returns structured JSON with sources and statistics
+6. **Error Handling**: Graceful handling of network errors and parsing failures
+
+### Return Format:
+
+```json
+{
+  "status": "success",
+  "query": "user search query",
+  "total_results": 15,
+  "sources": [
+    {
+      "title": "Source title",
+      "url": "http://www.lex.bg/path/to/source",
+      "category": "Category name",
+      "source_type": "person|document|law|administration|court",
+      "domain": "lex.bg",
+      "relevancy_score": 0.85,
+      "extraction_timestamp": "2024-01-01T12:00:00",
+      "content_preview": "Preview text..." // Optional for documents/laws
+    }
+  ],
+  "statistics": {
+    "categories": {"Вещи лица": 10, "Документи": 3, "Нормативни актове": 2},
+    "source_types": {"person": 10, "document": 3, "law": 2},
+    "avg_relevancy": 0.78
+  },
+  "metadata": {
+    "search_engine": "lex.bg",
+    "search_timestamp": "2024-01-01T12:00:00",
+    "processing_time_estimate": "~2-5 seconds"
+  }
+}
+```
+
+### Frontend Integration:
+
+The tool is integrated into the Streamlit frontend as a search methodology option:
+- **Option**: "🏛️ LEX.BG Специализирано (Директно от lex.bg)"
+- **Usage**: Select methodology and enter Bulgarian legal query
+- **Results**: Displays structured results with categories and metadata
+
+---
+
+## Original API Specification: 
+
+
+METHOD: POST 
+URL: https://lex.bg/search
+ 
+
+CURL: 
+
+ curl -X POST https://lex.bg/search \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -H "User-Agent: Mozilla/5.0" \
+  -d "searchBox=<HERE IS THE SEARCHING PARAM - ex: " лека телесна"> \
+  -d "x=11" \
+  -d "y=7" \
+  -d "search_for_all=1" \
+  -d "search_for_news=0" \
+  -d "search_for_forums=0" \
+  -d "search_for_spravochnik=1" \
+  -d "search_for_blogs=0" \
+  -d "search_for_services=0" \
+  -d "search_for_pages=0" \
+  -d "search_for_jobs=0" \
+  -d "search_for_jokes=0" \
+  -d "search_for_acts=0" \
+  -d "search_for_org=0" \
+  -d "search_for_instr=0" \
+  -d "search_for_blanks=0"
+ 
+
+
+RESPONSE: 
+ in responce there are a summaries of the most relevant resilds and a urls to the results in the following format:
+<div id="spravochnikres" class="ui-tabs-panel ui-widget-content ui-corner-bottom" bis_skin_checked="1">
+
+					<div bis_skin_checked="1">
+
+					
+						<h3><img title="категория" alt="категория" src="https://lex.bg/assets/im//arrow_next_dark.png" class="bottom">&nbsp;<a href="javascript:void(0)" onclick="show_hide('spravochnikresВещилица')">Вещи лица (24)</a></h3>
+
+						<div id="accordion_spravochnikresВещилица" style="display:none" bis_skin_checked="1">
+
+						<span id="pages_spravochnikres_Вещилица1" class="pages_spravochnikres_Вещилица">
+
+						<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14597">Александър Благоев Терзов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13985">Александър Драганов Шулев</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14048">Бердж Жираир Аттарян</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/17530">Геновева Атанасова Балиева</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13703">Димитрина Желязкова Вълчанова</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13990">Емил Борисов Наумов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13951">Емил Николов Златанов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/18564">Иван Георгиев Тодоров</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13991">Иван Григоров Николов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14656">Иван Костадинов Петков</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14505">Илияна Борисова Иванова</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14680">Лиляна Георгиева Убчева</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/15825">Людмил Кирилов Дончев</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/18733">Надежда Маркова Недялкова</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13223">Никола Жеков Шишков</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13962">Росица Веселинова Митова</a><br><br>
+</span>
+<span id="pages_spravochnikres_Вещилица2" class="pages_spravochnikres_Вещилица" style="display:none">
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14011">Симеон Харалампиев Митков</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13928">Стоян Георгиев Костадинов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14120">Татяна Любенова Костадинова</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14123">Татяна Любенова Костадинова</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14073">Христо Л. Караканов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/18631">Цветан Иванов Цветанов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/14661">Цветко Стоянов Радулов</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/vl/search2/13777">д-р Михаил Събев Чаушев</a><br><br>
+
+						</span>
+
+
+
+						
+						<div id="pages_spravochnikres_Вещилица" class="pager" bis_skin_checked="1">
+
+						<a style="font-weight:bold" class="i_pages_spravochnikres_Вещилица" id="i_pages_spravochnikres_Вещилица1" href="javascript:void(0)" onclick="gotopage('pages_spravochnikres_Вещилица',1)">1</a> &nbsp; <a class="i_pages_spravochnikres_Вещилица" id="i_pages_spravochnikres_Вещилица2" href="javascript:void(0)" onclick="gotopage('pages_spravochnikres_Вещилица',2)">2</a> &nbsp; 
+						</div><br>
+
+						
+						</div>
+
+
+
+					
+						<h3><img title="категория" alt="категория" src="https://lex.bg/assets/im//arrow_next_dark.png" class="bottom">&nbsp;<a href="javascript:void(0)" onclick="show_hide('spravochnikresДокументи')">Документи (1)</a></h3>
+
+						<div id="accordion_spravochnikresДокументи" bis_skin_checked="1">
+
+						<span id="pages_spravochnikres_Документи1" class="pages_spravochnikres_Документи">
+
+						<a target="_blank" class="law" href="http://www.lex.bg/bg/documents/view/7888">Искане за извършване на административна услуга, Sofiqoblast</a><br><br>
+
+						</span>
+
+
+
+						
+						</div>
+
+
+
+					
+						<h3><img title="категория" alt="категория" src="https://lex.bg/assets/im//arrow_next_dark.png" class="bottom">&nbsp;<a href="javascript:void(0)" onclick="show_hide('spravochnikresНормативниактове')">Нормативни актове (6)</a></h3>
+
+						<div id="accordion_spravochnikresНормативниактове" style="display:none" bis_skin_checked="1">
+
+						<span id="pages_spravochnikres_Нормативниактове1" class="pages_spravochnikres_Нормативниактове">
+
+						<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135594889">НАРЕДБА № 23 ОТ 14 ЮЛИ 2008 Г. ЗА УСЛОВИЯТА И РЕДА ЗА ПРЕДОСТАВЯНЕ НА БЕЗВЪЗМЕЗДНА ФИНАНСОВА ПОМОЩ ПО МЯРКА "ПРОФЕСИОНАЛНО ОБУЧЕНИЕ, ИНФОРМАЦИОННИ ДЕЙНОСТИ И РАЗПРОСТРАНЕНИЕ НА НАУЧНИ ЗНАНИЯ" ПО ПРОГРАМАТА ЗА РАЗВИТИЕ НА СЕЛСКИТЕ РАЙОНИ ЗА ПЕРИОДА 2007...</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135597016">НАРЕДБА № 29 ОТ 11 АВГУСТ 2008 Г. ЗА УСЛОВИЯТА И РЕДА ЗА ПРЕДОСТАВЯНЕ НА БЕЗВЪЗМЕЗДНА ФИНАНСОВА ПОМОЩ ПО МЯРКА "ПОДКРЕПА ЗА СЪЗДАВАНЕ И РАЗВИТИЕ НА МИКРОПРЕДПРИЯТИЯ" ОТ ПРОГРАМАТА ЗА РАЗВИТИЕ НА СЕЛСКИТЕ РАЙОНИ ЗА ПЕРИОДА 2007 - 2013 Г.</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135597327">НАРЕДБА № 30 ОТ 11 АВГУСТ 2008 Г. ЗА УСЛОВИЯТА И РЕДА ЗА ПРЕДОСТАВЯНЕ НА БЕЗВЪЗМЕЗДНА ФИНАНСОВА ПОМОЩ ПО МЯРКА "РАЗНООБРАЗЯВАНЕ КЪМ НЕЗЕМЕДЕЛСКИ ДЕЙНОСТИ" ОТ ПРОГРАМАТА ЗА РАЗВИТИЕ НА СЕЛСКИТЕ РАЙОНИ ЗА ПЕРИОДА 2007 - 2013 Г.</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135657426">НАРЕДБА № 48 ОТ 11 ДЕКЕМВРИ 2009 Г. ЗА УТВЪРЖДАВАНЕ НА МЕДИЦИНСКИ СТАНДАРТ "НУКЛЕАРНА МЕДИЦИНА"</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135588751">НАРЕДБА ЗА ЕЛЕКТРОННИТЕ АДМИНИСТРАТИВНИ УСЛУГИ</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/bg/laws/ldoc/2135476031">НАРЕДБА ЗА ОПРЕДЕЛЯНЕ НА ПОЗИТИВЕН ЛЕКАРСТВЕН СПИСЪК В РЕПУБЛИКА БЪЛГАРИЯ</a><br><br>
+
+						</span>
+
+
+
+						
+						</div>
+
+
+
+					
+						<h3><img title="категория" alt="категория" src="https://lex.bg/assets/im//arrow_next_dark.png" class="bottom">&nbsp;<a href="javascript:void(0)" onclick="show_hide('spravochnikresОбластниадминистрации')">Областни администрации (12)</a></h3>
+
+						<div id="accordion_spravochnikresОбластниадминистрации" style="display:none" bis_skin_checked="1">
+
+						<span id="pages_spravochnikres_Областниадминистрации1" class="pages_spravochnikres_Областниадминистрации">
+
+						<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/22">Областна администрация - Софийска област</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/24">Областна администрация - Стара Загорa</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/10">Областна администрация – Кюстендил</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/11">Областна администрация – Ловеч</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/12">Областна администрация – Монтана</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/14">Областна администрация – Перник</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/15">Областна администрация – Плевен</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/17">Областна администрация – Разград</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/23">Областна администрация – София град</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/25">Областна администрация – Търговище</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/26">Областна администрация – Хасковo</a><br><br>
+<a target="_blank" class="law" href="http://www.lex.bg/oblasti/map/27">Областна администрация – Шумен</a><br><br>
+
+						</span>
+
+
+
+						
+						</div>
+
+
+
+					
+						<h3><img title="категория" alt="категория" src="https://lex.bg/assets/im//arrow_next_dark.png" class="bottom">&nbsp;<a href="javascript:void(0)" onclick="show_hide('spravochnikresСъдилища')">Съдилища (1)</a></h3>
+
+						<div id="accordion_spravochnikresСъдилища" bis_skin_checked="1">
+
+						<span id="pages_spravochnikres_Съдилища1" class="pages_spravochnikres_Съдилища">
+
+						<a target="_blank" class="law" href="http://www.lex.bg/lawcourts/search2/187">Административен съд София  област</a><br><br>
+
+						</span>
+
+
+
+						
+						</div>
+
+
+
+					
+					</div>
+
+					<script>
+
+					$(document).ready(function() {
+
+					//	$("#accordion_spravochnikres" ).accordion({ header: 'h3' });
+
+					});
+
+					</script>
+
+				</div>
+   
+</div>

@@ -504,6 +504,7 @@
                         <label class="control-label">Методология</label>
                         <select class="control-select" id="methodology">
                             <option value="enhanced">🚀 Напредна</option>
+                            <option value="lex_bg">🏛️ LEX.BG Специализирано</option>
                             <option value="vks">⚖️ ВКС (Върховен касационен съд)</option>
                             <option value="standard">📊 Стандартна</option>
                             <option value="experimental">🧪 Експериментална</option>
@@ -786,12 +787,29 @@
                     // Debug logging
                     console.log('formatContent received:', typeof content, content);
                     
+                    // Handle LEX.BG JSON responses
+                    if (typeof content === 'string') {
+                        try {
+                            const parsed = JSON.parse(content);
+                            if (parsed.sources && Array.isArray(parsed.sources)) {
+                                return this.formatLexBgResults(parsed);
+                            }
+                        } catch (parseError) {
+                            // Not JSON, treat as regular text
+                        }
+                    }
+                    
                     // Handle different content types
                     let textContent = '';
                     
                     if (typeof content === 'string') {
                         textContent = content;
                     } else if (typeof content === 'object' && content !== null) {
+                        // Check if it's LEX.BG format
+                        if (content.sources && Array.isArray(content.sources)) {
+                            return this.formatLexBgResults(content);
+                        }
+                        
                         // If it's an array of results, format them
                         if (Array.isArray(content)) {
                             textContent = content.map(item => {
@@ -837,6 +855,154 @@
                             <summary>Детайли за разработчици</summary>
                             <pre style="font-size: 11px; margin-top: 4px;">${JSON.stringify(content, null, 2)}</pre>
                         </details>
+                    </div>`;
+                }
+            }
+
+            formatLexBgResults(data) {
+                try {
+                    let html = '';
+                    
+                    // Header with status and summary
+                    const status = data.status || 'unknown';
+                    const totalResults = data.total_results || 0;
+                    const query = data.query || 'N/A';
+                    
+                    html += `<div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                        <h3 style="margin: 0 0 8px 0; color: #2e7d32; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-search"></i> LEX.BG Резултати
+                        </h3>
+                        <div style="font-size: 14px; color: #333;">
+                            <strong>Заявка:</strong> "${query}" | 
+                            <strong>Статус:</strong> ${status} | 
+                            <strong>Резултати:</strong> ${totalResults}
+                        </div>
+                    </div>`;
+                    
+                    // Statistics summary
+                    if (data.statistics) {
+                        const stats = data.statistics;
+                        html += `<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                            <h4 style="margin: 0 0 8px 0; color: #495057;">📊 Статистика</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 13px;">`;
+                        
+                        if (stats.categories) {
+                            html += `<div><strong>Категории:</strong><br>`;
+                            Object.entries(stats.categories).forEach(([cat, count]) => {
+                                html += `• ${cat}: ${count}<br>`;
+                            });
+                            html += `</div>`;
+                        }
+                        
+                        if (stats.source_types) {
+                            html += `<div><strong>Типове източници:</strong><br>`;
+                            Object.entries(stats.source_types).forEach(([type, count]) => {
+                                const typeNames = {
+                                    'person': '👤 Лица',
+                                    'document': '📄 Документи', 
+                                    'law': '⚖️ Закони',
+                                    'administration': '🏢 Администрации',
+                                    'court': '🏛️ Съдилища'
+                                };
+                                html += `• ${typeNames[type] || type}: ${count}<br>`;
+                            });
+                            html += `</div>`;
+                        }
+                        
+                        if (stats.avg_relevancy) {
+                            html += `<div><strong>Средна релевантност:</strong><br>${Math.round(stats.avg_relevancy * 100)}%</div>`;
+                        }
+                        
+                        html += `</div></div>`;
+                    }
+                    
+                    // Sources grouped by category
+                    if (data.sources && data.sources.length > 0) {
+                        const sourcesByCategory = {};
+                        data.sources.forEach(source => {
+                            const category = source.category || 'Други';
+                            if (!sourcesByCategory[category]) {
+                                sourcesByCategory[category] = [];
+                            }
+                            sourcesByCategory[category].push(source);
+                        });
+                        
+                        Object.entries(sourcesByCategory).forEach(([category, sources]) => {
+                            const categoryIcons = {
+                                'Вещи лица': '👤',
+                                'Документи': '📄',
+                                'Нормативни актове': '⚖️',
+                                'Областни администрации': '🏢',
+                                'Съдилища': '🏛️'
+                            };
+                            
+                            html += `<div style="margin-bottom: 24px;">
+                                <h4 style="color: #1e3c72; margin: 0 0 12px 0; padding: 8px 12px; background: #f0f4f8; border-radius: 6px; border-left: 4px solid #1e3c72;">
+                                    ${categoryIcons[category] || '📁'} ${category} (${sources.length})
+                                </h4>`;
+                            
+                            sources.forEach(source => {
+                                const relevancyClass = this.getRelevancyClass(source.relevancy_score || 0);
+                                const sourceTypeIcons = {
+                                    'person': '👤',
+                                    'document': '📄',
+                                    'law': '⚖️',
+                                    'administration': '🏢',
+                                    'court': '🏛️'
+                                };
+                                
+                                html += `<div class="legal-result" style="margin: 8px 0; border-left: 3px solid #28a745;">
+                                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 8px;">
+                                        <h5 style="margin: 0; font-size: 16px; color: #1f2937; flex: 1;">
+                                            ${sourceTypeIcons[source.source_type] || '📋'} ${source.title}
+                                        </h5>
+                                        <span class="relevancy-score relevancy-${relevancyClass}" style="margin-left: 8px;">
+                                            ${Math.round((source.relevancy_score || 0) * 100)}%
+                                        </span>
+                                    </div>`;
+                                
+                                if (source.content_preview) {
+                                    html += `<p style="margin: 8px 0; font-size: 14px; color: #555; font-style: italic;">
+                                        ${source.content_preview}
+                                    </p>`;
+                                }
+                                
+                                html += `<div style="margin-top: 8px;">
+                                    <a href="${source.url}" target="_blank" style="color: #1e3c72; text-decoration: none; font-size: 14px; font-weight: 500;">
+                                        🔗 Отвори в LEX.BG
+                                    </a>
+                                </div>
+                                
+                                <div style="margin-top: 8px; font-size: 12px; color: #666; display: flex; gap: 16px;">
+                                    <span>🏷️ Тип: ${source.source_type}</span>
+                                    <span>🌐 Домейн: ${source.domain}</span>
+                                    <span>⏰ ${new Date(source.extraction_timestamp).toLocaleString('bg-BG')}</span>
+                                </div>
+                                
+                                </div>`;
+                            });
+                            
+                            html += `</div>`;
+                        });
+                    }
+                    
+                    // Metadata footer
+                    if (data.metadata) {
+                        html += `<div style="margin-top: 20px; padding: 12px; background: #f8f9fa; border-radius: 6px; border-top: 2px solid #6c757d;">
+                            <small style="color: #6c757d;">
+                                🔍 Търсене: ${data.metadata.search_engine} | 
+                                ⏱️ Време: ${data.metadata.processing_time_estimate} | 
+                                📅 ${new Date(data.metadata.search_timestamp).toLocaleString('bg-BG')}
+                            </small>
+                        </div>`;
+                    }
+                    
+                    return html;
+                } catch (error) {
+                    console.error('Error formatting LEX.BG results:', error);
+                    return `<div style="color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px;">
+                        <strong>Грешка при форматиране на LEX.BG резултатите:</strong><br>
+                        ${error.message}
                     </div>`;
                 }
             }

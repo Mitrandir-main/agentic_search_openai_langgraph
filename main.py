@@ -226,6 +226,17 @@ async def search_legal_content(request: SearchRequest):
                 else:
                     search_results = format_no_vks_results(request.query)
                 
+            elif methodology == "lex_bg":
+                # LEX.BG specialized search
+                await manager.broadcast({
+                    "type": "search_status",
+                    "status": "lex_bg_search", 
+                    "message": "🏛️ Търся директно в базата данни на LEX.BG..."
+                })
+                
+                from enhanced_legal_tools import lex_bg_search
+                search_results = lex_bg_search(request.query, request.max_results)
+                
             elif methodology == "multi_domain":
                 # Multi-domain search
                 await manager.broadcast({
@@ -672,7 +683,7 @@ async def chat_with_ai(request: ChatRequest):
             })
             
             response = client.chat.completions.create(
-                model=request.model or "gpt-3.5-turbo",
+                model=request.model or "gpt-4o-mini",
                 messages=messages,
                 max_tokens=request.max_tokens or 1000,
                 temperature=0.7,
