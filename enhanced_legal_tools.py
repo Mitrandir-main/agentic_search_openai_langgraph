@@ -2257,7 +2257,7 @@ def vks_bg_search_tool(query: str) -> str:
         logger.error(f"❌ VKS search tool error: {e}")
         return f"❌ Възникна грешка при търсенето в ВКС: {str(e)}"
 
-@tool("lex_bg_search_fixed", return_direct=False)
+@tool("lex_bg_search", return_direct=False)
 def lex_bg_search(query: str, max_results: int = 15) -> str:
     """
     WORKING VERSION: Search and scrape results from lex.bg legal information site.
@@ -2531,7 +2531,7 @@ def extract_lex_content_preview(url: str) -> str:
 
 
 if __name__ == "__main__":
-    result = lex_bg_search_fixed('права')  # Returns 15 results
+    result = lex_bg_search('права')  # Returns 15 results
     # result2 = lex_bg_search_fixed('обир')  # Returns 15 results
     print(result)
     # print(result2)
